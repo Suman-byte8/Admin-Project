@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --sidebar-bg: #1f4d59;
+    --accent: #39b6ff;
+    --chip: #d9eef9;
+    --card: #ffffff;
+    --page: #f3f6f8;
+    --text-primary: #000000;
+    --text-secondary: #39b6ff;
+    --muted: #7e8a93;
+    --ring-track: #e9eef2;
+    --shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    --radius: 14px;
+  }
+
+  :root.dark {
+    --sidebar-bg: #0f2a33;
+    --accent: #39b6ff;
+    --chip: #1a3640;
+    --card: #1e293b;
+    --page: #0f172a;
+    --text-primary: #f8fafc;
+    --text-secondary: #39b6ff;
+    --muted: #94a3b8;
+    --ring-track: #334155;
+    --shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    --radius: 14px;
+  }
+}

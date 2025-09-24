@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src", "../Client/src/pages/SemiNavlinksPages", "../Client/src/components/banquet", "../Client/src/components/banquet"]
+}
