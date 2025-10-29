@@ -28,7 +28,7 @@ const DescLayout = ({ desc, isAdminPreview = false }) => {
       <div className={contentClasses}>
         <FullLogo isFlex={false} classes={isAdminPreview ? "text-xs" : ""} />
         <p className={textClasses}>{desc.description || desc.desc}</p>
-        <button className={buttonClasses}>Know More</button>
+        {/* <button className={buttonClasses}>Know More</button> */}
       </div>
 
       {/* Right Image/Slider */}

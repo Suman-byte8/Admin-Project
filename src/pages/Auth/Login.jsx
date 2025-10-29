@@ -5,16 +5,18 @@ import { AdminContext } from "../../context/AdminContext";
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
-    password: ""
+    password: "",
+    rememberMe: false
   });
   const [error, setError] = useState("");
   const adminContext = useContext(AdminContext);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: type === 'checkbox' ? checked : value
     });
   };
 
@@ -28,7 +30,7 @@ const Login = () => {
     }
 
     try {
-      const result = await adminContext.login(formData.email, formData.password);
+      const result = await adminContext.login(formData.email, formData.password, formData.rememberMe);
       if (result.success) {
         navigate("/");
       } else {
@@ -93,6 +95,22 @@ const Login = () => {
               onChange={handleChange}
               required
             />
+          </div>
+          <div className="mb-4 flex items-center">
+            <input
+              className="mr-2 leading-tight"
+              id="rememberMe"
+              name="rememberMe"
+              type="checkbox"
+              checked={formData.rememberMe}
+              onChange={handleChange}
+            />
+            <label
+              className="text-sm text-gray-700 dark:text-muted"
+              htmlFor="rememberMe"
+            >
+              Remember me
+            </label>
           </div>
           {error && (
             <div className="text-red-500 text-sm mb-4 text-center">
