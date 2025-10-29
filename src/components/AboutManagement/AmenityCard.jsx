@@ -6,6 +6,8 @@ import { Pencil, Trash2, Save, X } from "lucide-react";
 const AmenityCard = ({ _id, title, imageUrl, alt, description, onDelete, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedDescription, setEditedDescription] = useState(description);
+  const [editedImage, setEditedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const { getToken } = useContext(AdminContext);
@@ -26,11 +28,35 @@ const AmenityCard = ({ _id, title, imageUrl, alt, description, onDelete, onUpdat
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setEditedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditedDescription(description);
+    setEditedImage(null);
+    setImagePreview(null);
+    setIsEditing(false);
+  };
+
   const handleUpdate = async () => {
     setIsLoading(true);
     try {
-      await aboutApi.updateAmenity(_id, { description: editedDescription }, token);
-      onUpdate(_id, { description: editedDescription });
+      const formData = new FormData();
+      formData.append("description", editedDescription);
+      if (editedImage) {
+        formData.append("image", editedImage);
+      }
+      await aboutApi.updateAmenity(_id, formData, token);
+      onUpdate(_id, { description: editedDescription, image: editedImage ? imagePreview : imageUrl });
       setIsEditing(false);
     } catch (error) {
       alert("Failed to update amenity");
@@ -54,10 +80,20 @@ const AmenityCard = ({ _id, title, imageUrl, alt, description, onDelete, onUpdat
   <h3 className="font-semibold text-xl text-gray-800 mb-3 mt-2">{title}</h3>
   
   <div className="mb-4">
-    {imageUrl ? (
+    {imagePreview ? (
+      <img src={imagePreview} alt={alt} className="w-full h-40 object-cover rounded-md" />
+    ) : imageUrl ? (
       <img src={imageUrl} alt={alt} className="w-full h-40 object-cover rounded-md" />
     ) : (
       <div className="w-full h-40 bg-gray-100 flex items-center justify-center text-gray-400">📷 No Image</div>
+    )}
+    {isEditing && (
+      <input
+        onChange={handleImageChange}
+        className="mt-2 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+        type="file"
+        accept="image/*"
+      />
     )}
   </div>
   
