@@ -43,7 +43,9 @@ const ReservationFilters = ({ filters, setFilters }) => {
               ? "Accommodation"
               : filters.type === "restaurant"
               ? "Restaurant Reservation"
-              : "Meeting & Wedding"}
+              : filters.type === "meeting"
+              ? "Meeting & Wedding"
+              : "Room Booking"}
           </p>
           <i
             className={`fas ${
@@ -58,6 +60,7 @@ const ReservationFilters = ({ filters, setFilters }) => {
                 ["accommodation", "Accommodation"],
                 ["restaurant", "Restaurant Reservation"],
                 ["meeting", "Meeting & Wedding"],
+                ["room", "Room Booking"],
               ].map(([val, label]) => (
                 <li
                   key={val}
