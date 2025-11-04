@@ -1,10 +1,22 @@
 import React, { useEffect, useState, useContext } from "react";
-import { FaPlus, FaEdit, FaTrash, FaSpinner, FaUsers, FaTag, FaRupeeSign } from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaSpinner, FaUsers, FaTag, FaRupeeSign, FaCircle } from "react-icons/fa";
 import { toast } from "react-toastify";
 import AddRoomModal from "../components/RoomManagement/AddRoomModal";
 import EditRoomModal from "../components/RoomManagement/EditRoomModal";
-import { getRooms, addRoom, updateRoom, deleteRoom } from "../services/rooms";
+import { getRooms, addRoom, updateRoom, deleteRoom, updateRoomStatus } from "../services/rooms";
 import { AdminContext } from "@/context/AdminContext";
+
+const STATUS_COLORS = {
+  available: 'text-green-500',
+  booked: 'text-red-500',
+  maintenance: 'text-yellow-500'
+};
+
+const STATUS_LABELS = {
+  available: 'Available',
+  booked: 'Booked',
+  maintenance: 'Under Maintenance'
+};
 
 export default function RoomManagement() {
   const [rooms, setRooms] = useState([]);
@@ -78,6 +90,19 @@ export default function RoomManagement() {
     }
   };
 
+  const handleStatusChange = async (roomId, newStatus) => {
+    try {
+      const updated = await updateRoomStatus(roomId, newStatus, token);
+      setRooms(prev =>
+        prev.map(room => (room._id === roomId ? updated : room))
+      );
+      toast.success(`Room status updated to ${STATUS_LABELS[newStatus]}`);
+    } catch (err) {
+      console.error(err);
+      toast.error("Error updating room status");
+    }
+  };
+
   // Loading
   if (loading) {
     return (
@@ -129,9 +154,23 @@ export default function RoomManagement() {
 
             {/* Content */}
             <div className="flex-1 p-5 space-y-2">
-              <h2 className="text-lg font-semibold text-gray-800">
-                {room.roomName}
-              </h2>
+              <div className="flex justify-between items-start">
+                <h2 className="text-lg font-semibold text-gray-800">
+                  {room.roomName}
+                </h2>
+                <div className="flex items-center gap-2">
+                  <FaCircle className={`${STATUS_COLORS[room.roomStatus]} text-xs`} />
+                  <select
+                    value={room.roomStatus}
+                    onChange={(e) => handleStatusChange(room._id, e.target.value)}
+                    className="text-sm border rounded px-2 py-1 bg-gray-50 hover:bg-gray-100"
+                  >
+                    <option value="available">Available</option>
+                    <option value="booked">Booked</option>
+                    <option value="maintenance">Maintenance</option>
+                  </select>
+                </div>
+              </div>
               <p className="text-sm text-gray-500">{room.roomType}</p>
 
               <div className="flex items-center gap-2 text-gray-600 text-sm">
