@@ -204,7 +204,7 @@ const ReservationTable = ({
             <th className="p-3 text-left border-b border-gray-200">Phone</th>
             <th className="p-3 text-left border-b border-gray-200">Type</th>
             <th className="p-3 text-left border-b border-gray-200">Date</th>
-            <th className="p-3 text-left border-b border-gray-200">Guests</th>
+            <th className="p-3 text-left border-b border-gray-200">Room Details</th>
             <th className="p-3 text-left border-b border-gray-200">Status</th>
             <th className="p-3 text-left border-b border-gray-200">Actions</th>
           </tr>
@@ -215,21 +215,39 @@ const ReservationTable = ({
               key={r._id}
               className="border-t border-gray-200 hover:bg-gray-50"
             >
-              <td className="p-3 font-medium">{r.guestInfo?.name}</td>
-              <td className="p-3 text-gray-600">{r.guestInfo?.email}</td>
-              <td className="p-3 text-gray-600">{r.guestInfo?.phoneNumber}</td>
+              <td className="p-3 font-medium">{r.guestInfo?.name || (r.guest?.name)}</td>
+              <td className="p-3 text-gray-600">{r.guestInfo?.email || (r.guest?.email)}</td>
+              <td className="p-3 text-gray-600">{r.guestInfo?.phoneNumber || (r.guest?.phoneNumber)}</td>
               <td className="p-3">
                 <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-medium">
                   {slugToLabel(filters.type)}
                 </span>
               </td>
               <td className="p-3 text-gray-600">
-                {new Date(r.createdAt).toLocaleDateString()}
+                {new Date(r.arrivalDate || r.createdAt).toLocaleDateString()} 
+                {r.departureDate && (
+                  <div className="text-xs text-gray-500">
+                    to {new Date(r.departureDate).toLocaleDateString()}
+                  </div>
+                )}
               </td>
-              <td className="p-3 text-center">
-                {r.numberOfGuests ||
-                  r.noOfDiners ||
-                  (r.totalAdults + r.totalChildren)}
+              <td className="p-3">
+                {filters.type === 'accommodation' && r.selectedRoomTypes ? (
+                  <div className="space-y-1">
+                    {r.selectedRoomTypes.map((room, idx) => (
+                      <div key={idx} className="text-xs">
+                        {room.type}: {room.count} {room.count > 1 ? 'rooms' : 'room'}
+                      </div>
+                    ))}
+                    <div className="text-xs text-gray-500 mt-1">
+                      Total Guests: {r.totalAdults + r.totalChildren}
+                    </div>
+                  </div>
+                ) : (
+                  <span className="text-center">
+                    {r.numberOfGuests || r.noOfDiners || (r.totalAdults + r.totalChildren)}
+                  </span>
+                )}
               </td>
               <td className="p-3">
                 <span
@@ -243,6 +261,11 @@ const ReservationTable = ({
                 >
                   {r.status}
                 </span>
+                {filters.type === 'room' && r.room && (
+                  <div className="mt-1 text-xs text-gray-500">
+                    Room: {r.room.roomName || r.room}
+                  </div>
+                )}
               </td>
               <td className="p-3 flex gap-2 flex-wrap">
                 <button

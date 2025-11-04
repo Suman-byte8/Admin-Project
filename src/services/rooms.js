@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 /**
  * Fetches all rooms with pagination.
@@ -48,21 +48,53 @@ export const addRoom = async (formData, token) => {
 /**
  * Updates a room by ID.
  * @param {string} id - The ID of the room to update.
- * @param {FormData} formData - The updated form data.
+ * @param {FormData|Object} data - The updated form data or status object.
  * @param {string} token - The authentication token.
  * @returns {Promise<any>} The updated room.
  */
-export const updateRoom = async (id, formData, token) => {
+export const updateRoom = async (id, data, token) => {
   try {
-    const res = await axios.put(`${API_URL}/rooms/admin/update-room-details/${id}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    // If it's a status update (plain object), use JSON content type
+    const isFormData = data instanceof FormData;
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": isFormData ? "multipart/form-data" : "application/json"
+    };
+
+    const res = await axios.put(
+      `${API_URL}/rooms/admin/update-room-details/${id}`, 
+      isFormData ? data : JSON.stringify(data),
+      { headers }
+    );
     return res.data.room;
   } catch (error) {
     console.error("Error updating room:", error);
+    throw error;
+  }
+};
+
+/**
+ * Updates the status of a room by ID.
+ * @param {string} id - The ID of the room to update.
+ * @param {string} status - The new status of the room.
+ * @param {string} token - The authentication token.
+ * @returns {Promise<any>} The updated room.
+ */
+export const updateRoomStatus = async (id, status, token) => {
+  try {
+    const res = await axios.patch(
+      `${API_URL}/rooms/admin/update-room-status/${id}`,
+      { roomStatus: status },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    return res.data.room;
+  } catch (error) {
+    console.error("Error updating room status:", error);
     throw error;
   }
 };

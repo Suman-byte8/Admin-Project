@@ -32,6 +32,10 @@ export const calculateTotalGuests = (reservation) => {
       const diners = Number(reservation.noOfDiners || 0);
       return diners > 0 ? `${diners} person${diners > 1 ? "s" : ""}` : "N/A";
     }
+    case "room": {
+      const guests = Number(reservation.numberOfGuests || 0);
+      return guests > 0 ? `${guests} person${guests > 1 ? "s" : ""}` : "N/A";
+    }
     case "Reception":
     case "Marriage":
     case "Engagement":
@@ -52,6 +56,7 @@ export const getArrivalDate = (reservation) => {
   const { typeOfReservation: type } = reservation;
   if (type === "accommodation") return formatDate(reservation.arrivalDate);
   if (type === "restaurant") return formatDate(reservation.date);
+  if (type === "room") return formatDate(reservation.checkIn);
   if (["Reception", "Marriage", "Engagement", "Birthday", "Corporate Event"].includes(type))
     return formatDate(reservation.reservationDate);
   return "N/A";
@@ -64,6 +69,7 @@ export const getDepartureInfo = (reservation) => {
   const { typeOfReservation: type } = reservation;
   if (type === "accommodation") return formatDate(reservation.departureDate);
   if (type === "restaurant") return reservation.timeSlot || "N/A";
+  if (type === "room") return formatDate(reservation.checkOut);
   if (["Reception", "Marriage", "Engagement", "Birthday", "Corporate Event"].includes(type))
     return formatDate(reservation.reservationEndDate);
   return "N/A";

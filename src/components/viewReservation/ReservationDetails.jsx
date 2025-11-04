@@ -2,10 +2,11 @@ import React from "react";
 import AccommodationDetails from "./AccommodationDetails";
 import RestaurantDetails from "./RestaurantDetails";
 import MeetingDetails from "./MeetingDetails";
+import RoomBookingDetails from "./RoomBookingDetails";
 import { labelToSlug } from "../../utils/typeMapper";
 
 const ReservationDetails = ({ reservation, type }) => {
-  const slug = labelToSlug(type); // normalize "Meeting & Wedding" → "meeting", etc.
+  const slug = labelToSlug(type);
 
   return (
     <>
@@ -21,6 +22,9 @@ const ReservationDetails = ({ reservation, type }) => {
         )}
         {slug === "meeting" && (
           <MeetingDetails reservation={reservation} />
+        )}
+        {slug === "room" && (
+          <RoomBookingDetails reservation={reservation} />
         )}
       </div>
     </>
