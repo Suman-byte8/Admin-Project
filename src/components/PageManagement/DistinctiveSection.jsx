@@ -7,12 +7,14 @@ import { Link } from "react-router-dom";
 import { FaRegEye } from "react-icons/fa";
 import { AdminContext } from "@/context/AdminContext";
 import { toast } from "react-toastify";
+import { validateWordCount } from "../../utils/validation";
 
 const DistinctiveSection = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [files, setFiles] = useState([]); // Files to upload
   const [previews, setPreviews] = useState([]); // Local preview URLs
+  const [descriptionError, setDescriptionError] = useState("");
 
   const { getToken } = useContext(AdminContext);
   const token = getToken();
@@ -48,8 +50,27 @@ const DistinctiveSection = () => {
     setPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleDescriptionChange = (e) => {
+    const value = e.target.value;
+    setDescription(value);
+
+    const validation = validateWordCount(value, 40, 50);
+    if (!validation.isValid) {
+      setDescriptionError(validation.message);
+    } else {
+      setDescriptionError("");
+    }
+  };
+
   const handleSaveChanges = async (e) => {
     e.preventDefault();
+
+    // Validate description
+    const validation = validateWordCount(description, 40, 50);
+    if (!validation.isValid) {
+      setDescriptionError(validation.message);
+      return;
+    }
 
     const formData = new FormData();
     formData.append("title", title);
@@ -62,12 +83,16 @@ const DistinctiveSection = () => {
       setDescription("");
       setFiles([]);
       setPreviews([]);
+      setDescriptionError("");
       toast.success("Distinctive section saved successfully");
     } catch (error) {
       console.error("Failed to save distinctive section:", error?.response?.data || error);
       toast.error("Failed to save distinctive section");
     }
   };
+
+  const wordCount = description.trim().split(/\s+/).filter(word => word.length > 0).length;
+  const isWordCountValid = wordCount >= 40 && wordCount <= 50;
 
   return (
     <form onSubmit={handleSaveChanges}>
@@ -90,13 +115,23 @@ const DistinctiveSection = () => {
           className="w-full border rounded-full px-4 py-2 mb-4 focus:ring-1 focus:ring-gray-300 outline-none"
         />
 
-        <textarea
-          rows="2"
-          placeholder="Enter description..."
-          className="w-full border rounded-lg px-4 py-2 focus:ring-1 focus:ring-gray-300 outline-none resize-none"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+        <div>
+          <textarea
+            rows="3"
+            placeholder="Enter description (40-50 words)..."
+            className={`w-full border rounded-lg px-4 py-2 focus:ring-1 focus:ring-gray-300 outline-none resize-none ${
+              descriptionError ? 'border-red-500' : ''
+            }`}
+            value={description}
+            onChange={handleDescriptionChange}
+          />
+          <div className="flex justify-between items-center mt-1">
+            <span className={`text-sm ${isWordCountValid ? 'text-gray-500' : 'text-red-500'}`}>
+              {wordCount}/40-50 words
+            </span>
+            {descriptionError && <span className="text-sm text-red-500">{descriptionError}</span>}
+          </div>
+        </div>
       </div>
 
       {/* Upload Images */}
@@ -144,7 +179,11 @@ const DistinctiveSection = () => {
 
       {/* Save */}
       <div className="flex justify-end mt-6">
-        <button type="submit" className="bg-[#2c5e6e] text-white px-5 py-2 rounded-full">
+        <button
+          type="submit"
+          disabled={!isWordCountValid}
+          className="bg-[#2c5e6e] text-white px-5 py-2 rounded-full disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
           Save Distinctive Section Changes
         </button>
       </div>

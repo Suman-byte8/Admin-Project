@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { MdCancel } from "react-icons/md";
 import { FaUpload, FaTimes } from "react-icons/fa";
+import { validateWordCount } from "../../utils/validation";
 
 const AddRoomModal = ({ isOpen, onClose, onSave }) => {
   const [roomNumber, setRoomNumber] = useState("");
@@ -16,6 +17,7 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
 
   const [imageError, setImageError] = useState("");
   const [heroImageError, setHeroImageError] = useState("");
+  const [descriptionError, setDescriptionError] = useState("");
 
   if (!isOpen) return null;
 
@@ -45,7 +47,26 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
     setHeroImagePreview(file ? URL.createObjectURL(file) : "");
   };
 
+  const handleDescriptionChange = (e) => {
+    const value = e.target.value;
+    setDescription(value);
+
+    const validation = validateWordCount(value, 1, 50);
+    if (!validation.isValid) {
+      setDescriptionError(validation.message);
+    } else {
+      setDescriptionError("");
+    }
+  };
+
   const handleSave = () => {
+    // Validate description before saving
+    const validation = validateWordCount(description, 1, 50);
+    if (!validation.isValid) {
+      setDescriptionError(validation.message);
+      return;
+    }
+
     const formData = new FormData();
     formData.append("roomName", roomNumber);
     formData.append("roomType", roomType);
@@ -55,6 +76,9 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
     images.forEach((img) => formData.append("roomImages", img));
     onSave(formData);
   };
+
+  const wordCount = description.trim().split(/\s+/).filter(word => word.length > 0).length;
+  const isWordCountValid = wordCount <= 50;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-3">
@@ -198,14 +222,22 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium mb-1">Description</label>
+            <label className="block text-sm font-medium mb-1">Description (Max 50 words)</label>
             <textarea
               rows="4"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 resize-none"
+              onChange={handleDescriptionChange}
+              className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 resize-none ${
+                descriptionError ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="Write a short description..."
             />
+            <div className="flex justify-between items-center mt-1">
+              <span className={`text-sm ${isWordCountValid ? 'text-gray-500' : 'text-red-500'}`}>
+                {wordCount}/50 words
+              </span>
+              {descriptionError && <span className="text-sm text-red-500">{descriptionError}</span>}
+            </div>
           </div>
         </div>
 
@@ -221,7 +253,8 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
           <button
             type="button"
             onClick={handleSave}
-            className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow"
+            disabled={!isWordCountValid || wordCount === 0}
+            className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Save Room
           </button>

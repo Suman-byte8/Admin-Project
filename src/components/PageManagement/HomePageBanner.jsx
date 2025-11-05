@@ -5,15 +5,15 @@ import { addHeroBanner } from "../../services/pageManagementApi";
 import { Link } from "react-router-dom";
 import { AdminContext } from "../../context/AdminContext";
 import { toast } from "react-toastify";
+import { validateWordCount } from "../../utils/validation";
 
 const HomePageBanner = () => {
   const [headline, setHeadline] = useState("");
-  const [subHeadline, setSubHeadline] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [url, setUrl] = useState("");
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [descriptionError, setDescriptionError] = useState("");
 
   const { getToken } = useContext(AdminContext);
 
@@ -59,11 +59,30 @@ const HomePageBanner = () => {
     }
   };
 
+  const handleDescriptionChange = (e) => {
+    const value = e.target.value;
+    setDescription(value);
+
+    const validation = validateWordCount(value, 1, 60);
+    if (!validation.isValid) {
+      setDescriptionError(validation.message);
+    } else {
+      setDescriptionError("");
+    }
+  };
+
   const handleSaveChanges = async (e) => {
     e.preventDefault();
 
+    // Validate description
+    const validation = validateWordCount(description, 1, 60);
+    if (!validation.isValid) {
+      setDescriptionError(validation.message);
+      return;
+    }
+
     // Client-side validation
-    if (!title || !description || !url || !file) {
+    if (!title || !description || !file) {
       console.error(
         "All fields are required. Please fill in all text fields and select a file."
       );
@@ -72,9 +91,7 @@ const HomePageBanner = () => {
 
     const formData = new FormData();
     formData.append("title", title);
-    formData.append("subtitle", subHeadline);
     formData.append("description", description);
-    formData.append("url", url);
     formData.append("page", "home");
     formData.append("section", "hero");
     formData.append("isActive", true);
@@ -96,12 +113,11 @@ const HomePageBanner = () => {
         URL.revokeObjectURL(previewUrl);
       }
       setHeadline("");
-      setSubHeadline("");
       setTitle("");
       setDescription("");
-      setUrl("");
       setFile(null);
       setPreviewUrl(null);
+      setDescriptionError("");
     } catch (error) {
       console.error(
         "Failed to add hero banner:",
@@ -110,6 +126,10 @@ const HomePageBanner = () => {
       toast.error("Failed to add hero banner");
     }
   };
+
+  const wordCount = description.trim().split(/\s+/).filter(word => word.length > 0).length;
+  const isWordCountValid = wordCount <= 60;
+
   return (
     <div>
       {" "}
@@ -166,31 +186,23 @@ const HomePageBanner = () => {
               onChange={(e) => setTitle(e.target.value)}
               className="border rounded-full px-4 py-2 focus:ring-1 focus:ring-gray-300 outline-none"
             />
-            <input
-              type="text"
-              placeholder="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="border rounded-full px-4 py-2 focus:ring-1 focus:ring-gray-300 outline-none"
-            />
-          </div>
-
-          {/* URL and Subheadline */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              type="text"
-              placeholder="URL (e.g. https://example.com)"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="border rounded-full px-4 py-2 focus:ring-1 focus:ring-gray-300 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Subtitle (optional)"
-              value={subHeadline}
-              onChange={(e) => setSubHeadline(e.target.value)}
-              className="border rounded-full px-4 py-2 focus:ring-1 focus:ring-gray-300 outline-none"
-            />
+            <div>
+              <textarea
+                placeholder="Description (Max 60 words)"
+                value={description}
+                onChange={handleDescriptionChange}
+                rows="3"
+                className={`w-full border rounded-lg px-4 py-2 focus:ring-1 focus:ring-gray-300 outline-none resize-none ${
+                  descriptionError ? 'border-red-500' : ''
+                }`}
+              />
+              <div className="flex justify-between items-center mt-1">
+                <span className={`text-sm ${isWordCountValid ? 'text-gray-500' : 'text-red-500'}`}>
+                  {wordCount}/60 words
+                </span>
+                {descriptionError && <span className="text-sm text-red-500">{descriptionError}</span>}
+              </div>
+            </div>
           </div>
 
           {/* Buttons */}
@@ -203,7 +215,8 @@ const HomePageBanner = () => {
             </button>
             <button
               type="submit"
-              className="bg-[#2c5e6e] text-white px-5 py-2 rounded-full"
+              disabled={!isWordCountValid || wordCount === 0}
+              className="bg-[#2c5e6e] text-white px-5 py-2 rounded-full disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               Save Changes
             </button>

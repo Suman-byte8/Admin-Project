@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { aboutApi } from "../../services/aboutApi";
 import { AdminContext } from "@/context/AdminContext";
 import { Pencil, Trash2, Save, X } from "lucide-react";
+import { validateWordCount } from "../../utils/validation";
 
 const AmenityCard = ({ _id, title, imageUrl, alt, description, onDelete, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -9,6 +10,7 @@ const AmenityCard = ({ _id, title, imageUrl, alt, description, onDelete, onUpdat
   const [editedImage, setEditedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [descriptionError, setDescriptionError] = useState("");
 
   const { getToken } = useContext(AdminContext);
   const token = getToken();
@@ -40,14 +42,33 @@ const AmenityCard = ({ _id, title, imageUrl, alt, description, onDelete, onUpdat
     }
   };
 
+  const handleDescriptionChange = (value) => {
+    setEditedDescription(value);
+
+    const validation = validateWordCount(value, 1, 25);
+    if (!validation.isValid) {
+      setDescriptionError(validation.message);
+    } else {
+      setDescriptionError("");
+    }
+  };
+
   const handleCancelEdit = () => {
     setEditedDescription(description);
     setEditedImage(null);
     setImagePreview(null);
     setIsEditing(false);
+    setDescriptionError("");
   };
 
   const handleUpdate = async () => {
+    // Validate description
+    const validation = validateWordCount(editedDescription, 1, 25);
+    if (!validation.isValid) {
+      setDescriptionError(validation.message);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const formData = new FormData();
@@ -66,6 +87,9 @@ const AmenityCard = ({ _id, title, imageUrl, alt, description, onDelete, onUpdat
     }
   };
 
+  const wordCount = editedDescription.trim().split(/\s+/).filter(word => word.length > 0).length;
+  const isWordCountValid = wordCount <= 25;
+
   return (
 <div className="bg-white border border-gray-200 p-4 rounded-xl hover:shadow-lg hover:-translate-y-1 transition transform relative">
   <div className="absolute top-3 right-3 flex gap-2">
@@ -76,9 +100,9 @@ const AmenityCard = ({ _id, title, imageUrl, alt, description, onDelete, onUpdat
       Delete
     </button>
   </div>
-  
+
   <h3 className="font-semibold text-xl text-gray-800 mb-3 mt-2">{title}</h3>
-  
+
   <div className="mb-4">
     {imagePreview ? (
       <img src={imagePreview} alt={alt} className="w-full h-40 object-cover rounded-md" />
@@ -96,17 +120,30 @@ const AmenityCard = ({ _id, title, imageUrl, alt, description, onDelete, onUpdat
       />
     )}
   </div>
-  
+
   {isEditing ? (
     <div>
       <textarea
         value={editedDescription}
-        onChange={(e) => setEditedDescription(e.target.value)}
+        onChange={(e) => handleDescriptionChange(e.target.value)}
         rows="3"
-        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+        placeholder="Description (Max 25 words)"
+        className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-green-500 resize-none ${
+          descriptionError ? 'border-red-500' : 'border-gray-300'
+        }`}
       />
-      <div className="flex gap-2 mt-2">
-        <button onClick={handleUpdate} className="flex-1 bg-green-600 text-white rounded-md py-1 hover:bg-green-700 text-sm">
+      <div className="flex justify-between items-center mt-1 mb-2">
+        <span className={`text-sm ${isWordCountValid ? 'text-gray-500' : 'text-red-500'}`}>
+          {wordCount}/25 words
+        </span>
+        {descriptionError && <span className="text-sm text-red-500">{descriptionError}</span>}
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={handleUpdate}
+          disabled={!isWordCountValid || wordCount === 0}
+          className="flex-1 bg-green-600 text-white rounded-md py-1 hover:bg-green-700 text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
           {isLoading ? "Saving..." : "Save"}
         </button>
         <button onClick={handleCancelEdit} className="flex-1 bg-gray-400 text-white rounded-md py-1 hover:bg-gray-500 text-sm">

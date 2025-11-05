@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect, useRef } from "react";
 import { X, Upload } from "lucide-react";
 import { addFacility } from "@/services/facilities";
 import { AdminContext } from "@/context/AdminContext";
+import { validateWordCount } from "../../utils/validation";
 
 export default function AddFacilityModal({ isOpen, onClose, onSave }) {
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [errors, setErrors] = useState({});
+  const [descriptionError, setDescriptionError] = useState("");
   const fileInputRef = useRef(null);
 
   const { getToken } = useContext(AdminContext);
@@ -24,6 +26,7 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
       setImage(null);
       setPreview(null);
       setErrors({});
+      setDescriptionError("");
     }
   }, [isOpen]);
 
@@ -35,6 +38,21 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleDescriptionChange = (e) => {
+    const value = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      description: value,
+    }));
+
+    const validation = validateWordCount(value, 60, 80);
+    if (!validation.isValid) {
+      setDescriptionError(validation.message);
+    } else {
+      setDescriptionError("");
+    }
   };
 
   const handleImageChange = (e) => {
@@ -61,6 +79,13 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
     e.preventDefault();
     if (!validateForm()) return;
 
+    // Validate description
+    const validation = validateWordCount(formData.description, 60, 80);
+    if (!validation.isValid) {
+      setDescriptionError(validation.message);
+      return;
+    }
+
     const submitData = new FormData();
     submitData.append("title", formData.title);
     submitData.append("subtitle", formData.subtitle);
@@ -80,6 +105,9 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
       setErrors({ submit: "Error adding facility. Please try again." });
     }
   };
+
+  const wordCount = formData.description.trim().split(/\s+/).filter(word => word.length > 0).length;
+  const isWordCountValid = wordCount >= 60 && wordCount <= 80;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
@@ -145,16 +173,24 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
           {/* Description */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description *
+              Description (60-80 words) *
             </label>
             <textarea
               name="description"
               value={formData.description}
-              onChange={handleInputChange}
-              rows="3"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              onChange={handleDescriptionChange}
+              rows="4"
+              className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none ${
+                descriptionError ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder="Enter facility description"
             />
+            <div className="flex justify-between items-center mt-1">
+              <span className={`text-sm ${isWordCountValid ? 'text-gray-500' : 'text-red-500'}`}>
+                {wordCount}/60-80 words
+              </span>
+              {descriptionError && <span className="text-sm text-red-500">{descriptionError}</span>}
+            </div>
             {errors.description && (
               <p className="text-xs text-red-600 mt-1">{errors.description}</p>
             )}
@@ -216,7 +252,8 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
           <button
             type="submit"
             onClick={handleSubmit}
-            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition"
+            disabled={!isWordCountValid || wordCount === 0}
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Add Facility
           </button>
