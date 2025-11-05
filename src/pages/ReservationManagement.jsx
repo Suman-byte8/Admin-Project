@@ -5,6 +5,7 @@ import ReservationFilters from "../components/reservationManagement/ReservationF
 import ReservationTable from "../components/reservationManagement/ReservationTable";
 import ReservationSearch from "../components/reservationManagement/ReservationSearch";
 import ReservationHeader from "../components/reservationManagement/ReservationHeader";
+import Pagination from "../components/reservationManagement/Pagination";
 import { debounce } from "lodash";
 import { loadFiltersFromStorage, saveFiltersToStorage } from "../utils/filterStorage";
 import { MdOutlineRefresh } from "react-icons/md";
@@ -19,6 +20,7 @@ const ReservationManagement = () => {
   const [filters, setFilters] = useState(() => loadFiltersFromStorage());
 
   const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   // ✅ Load reservations with forced delay
   const loadData = async () => {
@@ -30,6 +32,7 @@ const ReservationManagement = () => {
       const result = await fetchReservations(token, filters);
       setData(result.items || []);
       setTotal(result.total);
+      setTotalPages(result.totalPages || 0);
 
       // Force loading state for 5-8 seconds (random between 5-8 seconds)
       const delayTime = 5000 + Math.random() * 3000; // 5000-8000ms
@@ -50,6 +53,7 @@ const ReservationManagement = () => {
       const result = await fetchReservations(token, filters);
       setData(result.items || []);
       setTotal(result.total);
+      setTotalPages(result.totalPages || 0);
     } finally {
       setLoading(false);
     }
@@ -89,6 +93,11 @@ const ReservationManagement = () => {
         filters={filters}
         onActionComplete={loadData}
         setFilters={setFilters}
+      />
+      <Pagination
+        currentPage={filters.page}
+        totalPages={totalPages}
+        onPageChange={(page) => setFilters((prev) => ({ ...prev, page }))}
       />
     </div>
   );
