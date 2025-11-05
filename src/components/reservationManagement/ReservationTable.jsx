@@ -92,7 +92,7 @@ const ReservationTable = ({
               search: "",
               sortBy: "date_desc",
               page: 1,
-              limit: 50,
+              limit: 10,
             })
           }
           className="px-5 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition"

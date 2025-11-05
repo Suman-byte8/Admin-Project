@@ -10,7 +10,7 @@ const ReservationFilters = ({ filters, setFilters }) => {
   };
 
   const handleSelect = (field, value) => {
-    setFilters((prev) => ({ ...prev, [field]: value }));
+    setFilters((prev) => ({ ...prev, [field]: value, page: 1 }));
     setOpenDropdown(null);
   };
 
@@ -25,7 +25,7 @@ const ReservationFilters = ({ filters, setFilters }) => {
       search: "",
       sortBy: "date_desc",
       page: 1,
-      limit: 50,
+      limit: 10,
     });
   };
 
@@ -43,9 +43,7 @@ const ReservationFilters = ({ filters, setFilters }) => {
               ? "Accommodation"
               : filters.type === "restaurant"
               ? "Restaurant Reservation"
-              : filters.type === "meeting"
-              ? "Meeting & Wedding"
-              : "Room Booking"}
+              : "Meeting & Wedding"}
           </p>
           <i
             className={`fas ${
@@ -60,7 +58,6 @@ const ReservationFilters = ({ filters, setFilters }) => {
                 ["accommodation", "Accommodation"],
                 ["restaurant", "Restaurant Reservation"],
                 ["meeting", "Meeting & Wedding"],
-                ["room", "Room Booking"],
               ].map(([val, label]) => (
                 <li
                   key={val}

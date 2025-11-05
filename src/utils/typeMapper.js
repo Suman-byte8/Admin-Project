@@ -12,9 +12,6 @@ export const labelToSlug = (label) => {
     case "Meeting & Wedding":
     case "meeting":
       return "meeting";
-    case "Room Booking":
-    case "room":
-      return "room";
     default:
       return "accommodation";
   }
@@ -29,8 +26,6 @@ export const slugToLabel = (slug) => {
       return "Restaurant Reservation";
     case "meeting":
       return "Meeting & Wedding";
-    case "room":
-      return "Room Booking";
     default:
       return "Accommodation";
   }
