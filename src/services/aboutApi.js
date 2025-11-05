@@ -1,13 +1,21 @@
 import axios from "axios";
+import { cachedFetchAboutPage } from "../utils/apiCache";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 const API_BASE_URL = `${API_URL}/content/about`;
 
 // About Page API functions
 export const aboutApi = {
-  // Get About page content
+  // Get About page content with caching
   getAboutPage: async (token) => {
     try {
+      // Try cached version first
+      const cachedData = await cachedFetchAboutPage();
+      if (cachedData) {
+        return cachedData;
+      }
+
+      // Fallback to API call with auth
       const response = await axios.get(`${API_BASE_URL}/`, {
         headers: {
           Authorization: `Bearer ${token}`,

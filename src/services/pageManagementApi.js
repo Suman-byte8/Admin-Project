@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { cachedFetchHeroBanner } from '../utils/apiCache';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL
 
@@ -25,13 +26,19 @@ export const addHeroBanner = async (formData, token) => {
 };
 
 /**
- * Fetches existing banners.
+ * Fetches existing banners with caching.
  * @param {string} token - The authentication token.
  * @returns {Promise<any>} The response data from the server.
  */
 export const fetchBanners = async (token) => {
-    // console.log("Token for fetching banners:", token); // Debugging line
     try {
+        // Try cached version first
+        const cachedData = await cachedFetchHeroBanner();
+        if (cachedData) {
+            return { heroBanners: cachedData };
+        }
+
+        // Fallback to API call with auth
         const response = await axios.get(`${API_URL}/content/home/hero-banner`, {
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -98,12 +105,19 @@ export const deleteBanner = async (id, token) => {
 };
 
 /**
- * Fetches distinctive content.
+ * Fetches distinctive content with caching.
  * @param {string} token - The authentication token.
  * @returns {Promise<any>} The response data from the server.
  */
 export const fetchDistinctives = async (token) => {
     try {
+        // Try cached version first
+        const cachedData = await cachedFetchDistinctives();
+        if (cachedData) {
+            return cachedData;
+        }
+
+        // Fallback to API call with auth
         const response = await axios.get(`${API_URL}/content/home/distinctives`, {
             headers: {
                 'Authorization': `Bearer ${token}`

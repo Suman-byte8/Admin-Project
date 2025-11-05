@@ -1,9 +1,10 @@
 import axios from "axios";
+import { cachedFetchRooms } from "../utils/apiCache";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 /**
- * Fetches all rooms with pagination.
+ * Fetches all rooms with caching and pagination.
  * @param {string} token - The authentication token.
  * @param {number} page - The page number.
  * @param {number} limit - The number of rooms per page.
@@ -11,6 +12,15 @@ const API_URL = import.meta.env.VITE_BACKEND_URL;
  */
 export const getRooms = async (token, page = 1, limit = 20) => {
   try {
+    // Try cached version first (only for first page to avoid complexity)
+    if (page === 1) {
+      const cachedData = await cachedFetchRooms();
+      if (cachedData) {
+        return { rooms: cachedData.slice(0, limit), totalPages: Math.ceil(cachedData.length / limit), currentPage: 1 };
+      }
+    }
+
+    // Fallback to API call with auth
     const res = await axios.get(`${API_URL}/rooms/get-rooms`, {
       headers: {
         Authorization: `Bearer ${token}`,

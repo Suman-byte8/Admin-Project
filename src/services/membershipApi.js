@@ -1,7 +1,17 @@
 import http from "./http";
+import { cachedFetchMembership } from "../utils/apiCache";
 
 export const getMemberships = async (page = 1, limit = 50) => {
   try {
+    // Try cached version first (only for first page to avoid complexity)
+    if (page === 1) {
+      const cachedData = await cachedFetchMembership();
+      if (cachedData) {
+        return { memberships: cachedData.slice(0, limit), totalPages: Math.ceil(cachedData.length / limit), currentPage: 1 };
+      }
+    }
+
+    // Fallback to API call
     const response = await http.get("/membership", {
       params: { page, limit }
     });

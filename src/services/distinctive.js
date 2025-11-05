@@ -1,17 +1,30 @@
 // src/services/distinctive.js
 import axios from "axios";
+import { cachedFetchDistinctives } from "../utils/apiCache";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 const authHeader = (token) => ({
   Authorization: `Bearer ${token}`,
 });
 
-// READ
+// READ with caching
 export const fetchDistinctives = async (token) => {
-  const { data } = await axios.get(`${API_URL}/content/home/distinctives`, {
-    headers: authHeader(token),
-  });
-  return data;
+  try {
+    // Try cached version first
+    const cachedData = await cachedFetchDistinctives();
+    if (cachedData) {
+      return cachedData;
+    }
+
+    // Fallback to API call with auth
+    const { data } = await axios.get(`${API_URL}/content/home/distinctives`, {
+      headers: authHeader(token),
+    });
+    return data;
+  } catch (error) {
+    console.error("Error fetching distinctives:", error);
+    throw error;
+  }
 };
 
 // CREATE (multipart form-data for images)

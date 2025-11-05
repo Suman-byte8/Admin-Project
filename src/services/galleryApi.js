@@ -1,11 +1,23 @@
 import axios from "axios";
+import { cachedFetchGallery } from "../utils/apiCache";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 const token = import.meta.env.VITE_TEMP_ADMIN_TOKEN;
 
-// Get gallery images, optionally filtered by tab
+// Get gallery images with caching, optionally filtered by tab
 export const fetchGalleryImages = async (tab = null) => {
   try {
+    // Try cached version first
+    const cachedData = await cachedFetchGallery();
+    if (cachedData) {
+      // Filter by tab if provided
+      if (tab) {
+        return cachedData.filter(item => item.tab === tab);
+      }
+      return cachedData;
+    }
+
+    // Fallback to API call with auth
     const url = tab ? `${API_URL}/content/gallery?tab=${tab}` : `${API_URL}/content/gallery`;
     const response = await axios.get(url, {
       headers: {

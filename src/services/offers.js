@@ -1,14 +1,22 @@
 import axios from "axios";
+import { cachedFetchCuratedOffers } from "../utils/apiCache";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 /**
- * Fetches all curated offers.
+ * Fetches all curated offers with caching.
  * @param {string} token - The authentication token.
  * @returns {Promise<any>} The response data containing offers.
  */
 export const getOffers = async (token) => {
   try {
+    // Try cached version first
+    const cachedData = await cachedFetchCuratedOffers();
+    if (cachedData) {
+      return cachedData.offers || cachedData;
+    }
+
+    // Fallback to API call with auth
     const res = await axios.get(`${API_URL}/content/home/get-curated-offers`, {
       headers: {
         Authorization: `Bearer ${token}`,
