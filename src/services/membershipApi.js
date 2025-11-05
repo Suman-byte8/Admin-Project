@@ -8,7 +8,7 @@ export const getMemberships = async (page = 1, limit = 50) => {
     // Try cached version first (only for first page to avoid complexity)
     if (page === 1) {
       const cachedData = await cachedFetchMembership();
-      if (cachedData) {
+      if (cachedData && Array.isArray(cachedData)) {
         return { memberships: cachedData.slice(0, limit), totalPages: Math.ceil(cachedData.length / limit), currentPage: 1 };
       }
     }
