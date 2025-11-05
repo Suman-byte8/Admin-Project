@@ -126,7 +126,11 @@ export const cachedFetchRooms = () => cachedApiCall(
 
 export const cachedFetchMembership = () => cachedApiCall(
   async () => {
-    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/membership`);
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/membership`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+      },
+    });
     if (!response.ok) throw new Error('Failed to fetch membership');
     return response.json();
   },
