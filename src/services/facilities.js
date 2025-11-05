@@ -1,20 +1,26 @@
 import axios from "axios";
+import { cachedFetchFacilities } from "../utils/apiCache";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 /**
- * Fetches all facilities.
+ * Fetches all facilities with caching.
  * @returns {Promise<any>} The response data containing facilities.
  */
 export const getFacilities = async (token) => {
   try {
+    // Try cached version first
+    const cachedData = await cachedFetchFacilities();
+    if (cachedData) {
+      return cachedData;
+    }
+
+    // Fallback to API call with auth
     const res = await axios.get(`${API_URL}/facilities/get-facilities`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-    }
-
-    );
+    });
     return res.data.facilities;
   } catch (error) {
     console.error("Error fetching facilities:", error);
