@@ -4,6 +4,16 @@ import './index.css'
 import App from './App.jsx'
 import { ThemeProvider } from './context/ThemeContext'
 
+const noop = () => {}
+
+if (import.meta.env.VITE_ENVIRONMENT === 'production') {
+  console.log = noop
+  console.info = noop
+  console.debug = noop
+  console.warn = noop
+  console.error = noop
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ThemeProvider>
