@@ -58,7 +58,15 @@ const AddContent = ({ type, onContentAdded }) => {
   };
 
   return (
-<div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition transform hover:-translate-y-1">
+<div className={`bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition transform hover:-translate-y-1 ${loading ? 'relative' : ''}`}>
+  {loading && (
+    <div className="absolute inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-10 rounded-xl">
+      <div className="text-white text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+        <p>Adding...</p>
+      </div>
+    </div>
+  )}
   <h2 className="text-lg font-semibold mb-4 text-gray-800">
     ➕ Add {type.charAt(0).toUpperCase() + type.slice(1)}
   </h2>

@@ -14,6 +14,7 @@ const HomePageBanner = () => {
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [descriptionError, setDescriptionError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const { getToken } = useContext(AdminContext);
 
@@ -73,11 +74,13 @@ const HomePageBanner = () => {
 
   const handleSaveChanges = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     // Validate description
     const validation = validateWordCount(description, 1, 60);
     if (!validation.isValid) {
       setDescriptionError(validation.message);
+      setLoading(false);
       return;
     }
 
@@ -86,6 +89,7 @@ const HomePageBanner = () => {
       console.error(
         "All fields are required. Please fill in all text fields and select a file."
       );
+      setLoading(false);
       return;
     }
 
@@ -124,6 +128,8 @@ const HomePageBanner = () => {
         error.response?.data || error
       );
       toast.error("Failed to add hero banner");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -134,7 +140,15 @@ const HomePageBanner = () => {
     <div>
       {" "}
       {/* Home Page Banner Section */}
-      <div className="bg-white rounded-2xl shadow p-6 mb-10">
+      <div className={`bg-white rounded-2xl shadow p-6 mb-10 ${loading ? 'relative' : ''}`}>
+        {loading && (
+          <div className="absolute inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-10 rounded-2xl">
+            <div className="text-white text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+              <p>Saving...</p>
+            </div>
+          </div>
+        )}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-medium text-gray-700 mb-4">
             Home Page Banner Section

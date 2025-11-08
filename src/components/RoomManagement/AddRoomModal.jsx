@@ -82,7 +82,15 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-3">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col relative animate-fadeIn">
+      <div className={`bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col relative animate-fadeIn ${loading ? 'relative' : ''}`}>
+        {loading && (
+          <div className="absolute inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-20 rounded-2xl">
+            <div className="text-white text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+              <p>Saving...</p>
+            </div>
+          </div>
+        )}
         {/* Header */}
         <div className="sticky top-0 flex justify-between items-center border-b p-5 bg-white">
           <h2 className="text-xl font-semibold text-gray-800">
