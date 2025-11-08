@@ -1,5 +1,5 @@
 import axios from "axios";
-import { cachedFetchGallery } from "../utils/apiCache";
+import { cachedFetchGallery, invalidateCache } from "../utils/apiCache";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -40,6 +40,8 @@ export const addGalleryImages = async (formData, token) => {
         "Content-Type": "multipart/form-data",
       },
     });
+    // Invalidate gallery cache after mutation
+    invalidateCache('gallery');
     return response.data;
   } catch (error) {
     console.error('Error adding gallery images:', error);
@@ -56,6 +58,8 @@ export const updateGalleryImage = async (imageId, formData, token) => {
         "Content-Type": "multipart/form-data",
       },
     });
+    // Invalidate gallery cache after mutation
+    invalidateCache('gallery');
     return response.data;
   } catch (error) {
     console.error('Error updating gallery image:', error);
@@ -71,6 +75,8 @@ export const deleteGalleryImage = async (imageId) => {
         Authorization: `Bearer ${token}`,
       },
     });
+    // Invalidate gallery cache after mutation
+    invalidateCache('gallery');
     return response.data;
   } catch (error) {
     console.error('Error deleting gallery image:', error);

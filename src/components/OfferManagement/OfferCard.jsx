@@ -23,6 +23,9 @@ const OfferCard = ({
           src={offer.image}
           alt={offer.title}
           className="w-full h-48 object-cover rounded-lg"
+          loading="lazy"
+          width="400"
+          height="192"
         />
       </div>
 

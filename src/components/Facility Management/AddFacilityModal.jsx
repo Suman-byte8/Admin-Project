@@ -1,8 +1,10 @@
 import React, { useState, useContext, useEffect, useRef } from "react";
 import { X, Upload } from "lucide-react";
+import { toast } from "react-toastify";
 import { addFacility } from "@/services/facilities";
 import { AdminContext } from "@/context/AdminContext";
 import { validateWordCount } from "../../utils/validation";
+import { compressImages, shouldCompress } from "../../utils/imageCompression";
 
 export default function AddFacilityModal({ isOpen, onClose, onSave }) {
   const [formData, setFormData] = useState({
@@ -86,16 +88,25 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
       return;
     }
 
-    const submitData = new FormData();
-    submitData.append("title", formData.title);
-    submitData.append("subtitle", formData.subtitle);
-    submitData.append("description", formData.description);
-    submitData.append("path", "/default-path"); // backend-safe defaults
-    submitData.append("order", "0");
-    submitData.append("isActive", "true");
-    if (image) submitData.append("image", image);
-
     try {
+      const submitData = new FormData();
+      submitData.append("title", formData.title);
+      submitData.append("subtitle", formData.subtitle);
+      submitData.append("description", formData.description);
+      submitData.append("path", "/default-path"); // backend-safe defaults
+      submitData.append("order", "0");
+      submitData.append("isActive", "true");
+
+      // Compress image if needed
+      if (image) {
+        let processedImage = image;
+        if (shouldCompress(image)) {
+          toast.info("Compressing image...");
+          processedImage = await compressImages([image])[0];
+        }
+        submitData.append("image", processedImage);
+      }
+
       const token = getToken();
       const newFacility = await addFacility(submitData, token);
       if (onSave) onSave(newFacility);
@@ -218,6 +229,9 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
                   src={preview}
                   alt="Preview"
                   className="rounded-lg max-h-48 object-cover mb-3"
+                  loading="lazy"
+                  width="400"
+                  height="192"
                 />
               ) : (
                 <div className="flex flex-col items-center">

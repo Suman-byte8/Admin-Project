@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { toast } from "react-toastify";
 import { addGalleryImages } from "@/services/galleryApi";
 import { AdminContext } from "../../context/AdminContext";
+import { compressImages, shouldCompress } from "../../utils/imageCompression";
 
 const AddImageModal = ({ isOpen, onClose, onAddSuccess, activeTab }) => {
   const { getToken } = useContext(AdminContext);
@@ -66,13 +67,26 @@ const AddImageModal = ({ isOpen, onClose, onAddSuccess, activeTab }) => {
     }
 
     setLoading(true);
-    const formData = new FormData();
-    imageFiles.forEach((file) => formData.append("images", file));
-    formData.append("tab", tab);
-    if (title.trim() !== "") formData.append("title", title.trim());
-    if (caption.trim() !== "") formData.append("caption", caption.trim());
 
     try {
+      // Compress images that need compression
+      const filesToCompress = imageFiles.filter(shouldCompress);
+      const uncompressedFiles = imageFiles.filter(file => !shouldCompress(file));
+
+      let processedFiles = [...uncompressedFiles];
+
+      if (filesToCompress.length > 0) {
+        toast.info("Compressing images...");
+        const compressedFiles = await compressImages(filesToCompress);
+        processedFiles = [...processedFiles, ...compressedFiles];
+      }
+
+      const formData = new FormData();
+      processedFiles.forEach((file) => formData.append("images", file));
+      formData.append("tab", tab);
+      if (title.trim() !== "") formData.append("title", title.trim());
+      if (caption.trim() !== "") formData.append("caption", caption.trim());
+
       const token = getToken();
       if (!token) {
         toast.error("Authentication token missing");
@@ -152,6 +166,9 @@ const AddImageModal = ({ isOpen, onClose, onAddSuccess, activeTab }) => {
                       src={previewUrls[idx]}
                       alt={`Preview ${idx + 1}`}
                       className="w-full h-20 object-cover rounded-lg border border-gray-300"
+                      loading="lazy"
+                      width="80"
+                      height="80"
                     />
                     <p className="text-xs text-gray-500 mt-1 truncate">{file.name}</p>
                   </div>

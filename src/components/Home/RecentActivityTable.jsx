@@ -1,5 +1,5 @@
 import React from "react";
-import { FaEye, FaTrash, FaUserPlus, FaSignInAlt, FaSignOutAlt, FaCalendarCheck, FaCreditCard, FaUserEdit, FaCalendarAlt, FaInfoCircle } from "react-icons/fa";
+import { FaEye, FaTrash, FaUserPlus, FaSignInAlt, FaSignOutAlt, FaCalendarCheck, FaCreditCard, FaUserEdit, FaCalendarAlt, FaInfoCircle, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 export default function RecentActivityTable({
@@ -10,6 +10,9 @@ export default function RecentActivityTable({
   formatTimestamp,
   getActivityIcon,
   handleDeleteUser,
+  currentPage,
+  totalPages,
+  onPageChange,
 }) {
   const navigate = useNavigate();
 
@@ -131,6 +134,33 @@ export default function RecentActivityTable({
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {activities.length > 0 && (
+        <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-gray-200">
+          <div className="text-sm text-gray-700">
+            Showing page {currentPage} of {totalPages}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <FaChevronLeft size={12} />
+              Previous
+            </button>
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+              <FaChevronRight size={12} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

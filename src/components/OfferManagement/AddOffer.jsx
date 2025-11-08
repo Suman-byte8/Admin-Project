@@ -145,6 +145,9 @@ const AddOffer = ({ offer = {}, onSave, onCancel, onDelete }) => {
                   src={preview}
                   alt="Preview"
                   className="rounded-lg max-h-48 object-cover mb-3"
+                  loading="lazy"
+                  width="400"
+                  height="192"
                 />
               ) : (
                 <div className="flex flex-col items-center">

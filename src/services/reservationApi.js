@@ -1,6 +1,7 @@
 // src/services/reservationApi.js
 import axios from "axios";
 import { labelToSlug } from "../utils/typeMapper";
+import { invalidateCache } from "../utils/apiCache";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -30,6 +31,8 @@ export const updateReservationStatus = async (token, type, id, status) => {
     { status },
     { headers: { Authorization: `Bearer ${token}` } }
   );
+  // Invalidate reservations cache after mutation
+  invalidateCache('reservations');
   return res.data;
 };
 
@@ -39,5 +42,7 @@ export const deleteReservation = async (token, type, id) => {
   const res = await axios.delete(`${API_URL}/reservations/${slug}/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+  // Invalidate reservations cache after mutation
+  invalidateCache('reservations');
   return res.data;
 };
