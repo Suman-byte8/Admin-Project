@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { MdCancel } from "react-icons/md";
 import { FaUpload, FaTimes } from "react-icons/fa";
 import { validateWordCount } from "../../utils/validation";
+import { compressImage, shouldCompress } from "../../utils/imageCompression";
+import { toast } from "react-toastify";
 
 const AddRoomModal = ({ isOpen, onClose, onSave }) => {
   const [roomNumber, setRoomNumber] = useState("");
@@ -59,7 +61,7 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Validate description before saving
     const validation = validateWordCount(description, 1, 50);
     if (!validation.isValid) {
@@ -67,13 +69,30 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
       return;
     }
 
+    // Compress images if needed
+    let processedHeroImage = heroImage;
+    let processedImages = images;
+
+    if (heroImage && shouldCompress(heroImage)) {
+      toast.info("Compressing hero image...");
+      processedHeroImage = await compressImage(heroImage);
+    }
+
+    if (images.length > 0) {
+      toast.info("Compressing gallery images...");
+      const compressedImages = await Promise.all(
+        images.map(img => shouldCompress(img) ? compressImage(img) : Promise.resolve(img))
+      );
+      processedImages = compressedImages;
+    }
+
     const formData = new FormData();
     formData.append("roomName", roomNumber);
     formData.append("roomType", roomType);
     formData.append("roomPrice", price);
     formData.append("roomDescription", description);
-    if (heroImage) formData.append("heroImage", heroImage);
-    images.forEach((img) => formData.append("roomImages", img));
+    if (processedHeroImage) formData.append("heroImage", processedHeroImage);
+    processedImages.forEach((img) => formData.append("roomImages", img));
     onSave(formData);
   };
 

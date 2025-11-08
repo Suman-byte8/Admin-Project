@@ -1,5 +1,7 @@
 import React, { useState, useRef } from "react";
 import { X, Upload, Trash2 } from "lucide-react";
+import { compressImage, shouldCompress } from "../../utils/imageCompression";
+import { toast } from "react-toastify";
 
 const AddOffer = ({ offer = {}, onSave, onCancel, onDelete }) => {
   const [form, setForm] = useState({
@@ -37,13 +39,23 @@ const AddOffer = ({ offer = {}, onSave, onCancel, onDelete }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Compress image if needed
+    let processedImage = form.image;
+    if (form.image && shouldCompress(form.image)) {
+      toast.info("Compressing image...");
+      processedImage = await compressImage(form.image);
+    }
+
     const fd = new FormData();
     Object.entries(form).forEach(([key, value]) => {
       if (key === "details") {
         fd.append(key, JSON.stringify(value));
-      } else if (value) {
+      } else if (key === "image" && processedImage) {
+        fd.append(key, processedImage);
+      } else if (value && key !== "image") {
         fd.append(key, value);
       }
     });
@@ -145,6 +157,9 @@ const AddOffer = ({ offer = {}, onSave, onCancel, onDelete }) => {
                   src={preview}
                   alt="Preview"
                   className="rounded-lg max-h-48 object-cover mb-3"
+                  loading="lazy"
+                  width="400"
+                  height="192"
                 />
               ) : (
                 <div className="flex flex-col items-center">

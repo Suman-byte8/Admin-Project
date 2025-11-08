@@ -1,11 +1,11 @@
 import axios from "axios";
-import { cachedFetchGallery } from "../utils/apiCache";
+import { cachedFetchGallery, invalidateCache } from "../utils/apiCache";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 
 // Get gallery images with caching, optionally filtered by tab
-export const fetchGalleryImages = async (tab = null) => {
+export const fetchGalleryImages = async (tab = null, token) => {
   try {
     // Try cached version first
     const cachedData = await cachedFetchGallery();
@@ -40,6 +40,8 @@ export const addGalleryImages = async (formData, token) => {
         "Content-Type": "multipart/form-data",
       },
     });
+    // Invalidate gallery cache after mutation
+    invalidateCache('gallery');
     return response.data;
   } catch (error) {
     console.error('Error adding gallery images:', error);
@@ -56,6 +58,8 @@ export const updateGalleryImage = async (imageId, formData, token) => {
         "Content-Type": "multipart/form-data",
       },
     });
+    // Invalidate gallery cache after mutation
+    invalidateCache('gallery');
     return response.data;
   } catch (error) {
     console.error('Error updating gallery image:', error);
@@ -64,13 +68,15 @@ export const updateGalleryImage = async (imageId, formData, token) => {
 };
 
 // Delete gallery image
-export const deleteGalleryImage = async (imageId) => {
+export const deleteGalleryImage = async (imageId, token) => {
   try {
     const response = await axios.delete(`${API_URL}/content/gallery/admin/${imageId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+    // Invalidate gallery cache after mutation
+    invalidateCache('gallery');
     return response.data;
   } catch (error) {
     console.error('Error deleting gallery image:', error);

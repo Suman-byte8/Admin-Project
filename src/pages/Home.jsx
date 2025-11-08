@@ -13,14 +13,21 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deleteDialog, setDeleteDialog] = useState({ show: false, userId: null, userName: '' });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const fetchActivities = async () => {
       try {
         setLoading(true);
-        const data = await userActivityApi.getRecentActivities();
+        const data = await userActivityApi.getRecentActivities(currentPage, 50);
         if (data.success) {
-          setActivities(data.activities || []);
+          // Sort activities by timestamp in descending order (latest first)
+          const sortedActivities = (data.activities || []).sort((a, b) =>
+            new Date(b.timestamp) - new Date(a.timestamp)
+          );
+          setActivities(sortedActivities);
+          setTotalPages(data.totalPages || 1);
         } else {
           setError(data.message || 'Failed to load activities');
         }
@@ -33,7 +40,7 @@ export default function Home() {
     };
 
     fetchActivities();
-  }, []);
+  }, [currentPage]);
 
   const handleDeleteUser = (userId, userName) => {
     setDeleteDialog({ show: true, userId, userName });
@@ -83,6 +90,9 @@ export default function Home() {
             formatTimestamp={formatTimestamp}
             getActivityIcon={getActivityIcon}
             handleDeleteUser={handleDeleteUser}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
           />
         </div>
       </main>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { toast } from "react-toastify";
 
 import GalleryHeader from "@/components/GalleryManagement/GalleryHeader";
@@ -8,8 +8,11 @@ import EditImageModal from "@/components/GalleryManagement/EditImageModal";
 import ImageSkeleton from "@/components/GalleryManagement/ImageSkeleton";
 
 import { fetchGalleryImages, deleteGalleryImage } from "@/services/galleryApi";
+import { AdminContext } from "@/context/AdminContext";
 
 const GalleryManagement = () => {
+  const { getToken } = useContext(AdminContext);
+
   // States
   const [activeTab, setActiveTab] = useState("Rooms");
   const [images, setImages] = useState([]);
@@ -29,7 +32,8 @@ const GalleryManagement = () => {
   const fetchImages = async (tab) => {
     try {
       setLoading(true);
-      const data = await fetchGalleryImages(tab);
+      const token = getToken();
+      const data = await fetchGalleryImages(tab, token);
       setImages(data);
       setError("");
     } catch (err) {
@@ -76,7 +80,8 @@ const GalleryManagement = () => {
   const handleDeleteClick = async (imageId) => {
     if (!confirm("Are you sure you want to delete this image?")) return;
     try {
-      await deleteGalleryImage(imageId);
+      const token = getToken();
+      await deleteGalleryImage(imageId, token);
       setImages((prev) => prev.filter((img) => img._id !== imageId));
       toast.success("Image deleted successfully!");
     } catch (err) {

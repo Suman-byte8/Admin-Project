@@ -15,6 +15,7 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
   const [preview, setPreview] = useState(null);
   const [errors, setErrors] = useState({});
   const [descriptionError, setDescriptionError] = useState("");
+  const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
 
   const { getToken } = useContext(AdminContext);
@@ -27,6 +28,7 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
       setPreview(null);
       setErrors({});
       setDescriptionError("");
+      setLoading(false);
     }
   }, [isOpen]);
 
@@ -77,6 +79,7 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return; // Prevent double submission
     if (!validateForm()) return;
 
     // Validate description
@@ -86,6 +89,7 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
       return;
     }
 
+    setLoading(true);
     const submitData = new FormData();
     submitData.append("title", formData.title);
     submitData.append("subtitle", formData.subtitle);
@@ -96,13 +100,13 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
     if (image) submitData.append("image", image);
 
     try {
-      const token = getToken();
-      const newFacility = await addFacility(submitData, token);
-      if (onSave) onSave(newFacility);
+      if (onSave) await onSave(submitData);
       onClose();
     } catch (error) {
       console.error("Error adding facility:", error);
       setErrors({ submit: "Error adding facility. Please try again." });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -246,8 +250,6 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
           {errors.submit && (
             <p className="text-sm text-red-600">{errors.submit}</p>
           )}
-        </form>
-
         {/* Footer */}
         <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
           <button
@@ -259,14 +261,17 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
           </button>
           <button
             type="submit"
-            onClick={handleSubmit}
             disabled={!isWordCountValid || wordCount === 0}
             className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Add Facility
           </button>
         </div>
+      </form>
       </div>
     </div>
   );
 }
+
+
+

@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import { toast } from "react-toastify";
 import { aboutApi } from "../../services/aboutApi";
 import { AdminContext } from "@/context/AdminContext";
+import { compressImage, shouldCompress } from "../../utils/imageCompression";
 
 const AddContent = ({ type, onContentAdded }) => {
   const [title, setTitle] = useState("");
@@ -25,14 +26,21 @@ const AddContent = ({ type, onContentAdded }) => {
     setLoading(true);
     setMessage("");
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    if (image) {
-      formData.append("image", image);
-    }
-
     try {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+
+      // Compress image if needed
+      if (image) {
+        let processedImage = image;
+        if (shouldCompress(image)) {
+          toast.info("Compressing image...");
+          processedImage = await compressImage(image);
+        }
+        formData.append("image", processedImage);
+      }
+
       if (type === "content") {
         await aboutApi.addContentBlock(formData, token);
         toast.success("Content block added successfully!");
@@ -104,6 +112,9 @@ const AddContent = ({ type, onContentAdded }) => {
           src={preview}
           alt="Preview"
           className="mt-3 w-full h-32 object-cover rounded-lg border"
+          loading="lazy"
+          width="320"
+          height="128"
         />
       )}
     </div>

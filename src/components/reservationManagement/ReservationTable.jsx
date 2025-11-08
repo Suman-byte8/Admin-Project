@@ -36,7 +36,8 @@ const ReservationTable = ({
         );
         toast.success(`Reservation ${action}`);
       }
-      onActionComplete && onActionComplete(); // ✅ Refresh data only
+      // ✅ Refresh data and clear cache after status update
+      onActionComplete && onActionComplete();
     } catch (err) {
       toast.error("Action failed");
       console.error(err);

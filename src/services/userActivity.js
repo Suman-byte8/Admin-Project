@@ -2,7 +2,7 @@ import { adminApi } from './adminApi';
 
 export const userActivityApi = {
   // Fetch recent user activities
-  getRecentActivities: async () => {
+  getRecentActivities: async (page = 1, limit = 50) => {
     try {
       const token = localStorage.getItem('adminToken');
 
@@ -10,7 +10,7 @@ export const userActivityApi = {
       const axios = (await import('axios')).default;
       const API_URL = import.meta.env.VITE_BACKEND_URL;
 
-      const response = await axios.get(`${API_URL}/admin/user-activity`, {
+      const response = await axios.get(`${API_URL}/admin/user-activity?page=${page}&limit=${limit}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

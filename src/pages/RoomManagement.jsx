@@ -145,6 +145,9 @@ export default function RoomManagement() {
                 src={room.heroImage}
                 alt={room.roomName}
                 className="w-full h-48 object-cover"
+                loading="lazy"
+                width="400"
+                height="192"
               />
             ) : (
               <div className="w-full h-48 flex items-center justify-center bg-gray-100 text-gray-400">

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { cachedFetchFacilities } from "../utils/apiCache";
+import { cachedFetchFacilities, invalidateCache } from "../utils/apiCache";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
@@ -42,6 +42,8 @@ export const addFacility = async (formData, token) => {
         Authorization: `Bearer ${token}`,
       },
     });
+    // Invalidate facilities cache after mutation
+    invalidateCache('facilities');
     return res.data.facility;
   } catch (error) {
     console.error("Error adding facility:", error);
@@ -64,6 +66,8 @@ export const updateFacility = async (id, formData, token) => {
         Authorization: `Bearer ${token}`,
       },
     });
+    // Invalidate facilities cache after mutation
+    invalidateCache('facilities');
     return res.data.facility;
   } catch (error) {
     console.error("Error updating facility:", error);
@@ -84,6 +88,8 @@ export const deleteFacility = async (id, token) => {
         Authorization: `Bearer ${token}`,
       },
     });
+    // Invalidate facilities cache after mutation
+    invalidateCache('facilities');
     return res.data;
   } catch (error) {
     console.error("Error deleting facility:", error);
