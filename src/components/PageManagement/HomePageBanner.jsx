@@ -96,9 +96,6 @@ const HomePageBanner = () => {
     const formData = new FormData();
     formData.append("title", title);
     formData.append("description", description);
-    formData.append("page", "home");
-    formData.append("section", "hero");
-    formData.append("isActive", true);
     formData.append("image", file);
 
     // debug

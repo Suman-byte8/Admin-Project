@@ -161,4 +161,37 @@ export const cachedFetchUserActivity = () => cachedApiCall(
 // Utility functions
 export const clearCache = () => cache.clear();
 export const getCacheSize = () => cache.size();
-export const invalidateCache = (key) => cache.delete(key);
+export const invalidateCache = async (key) => {
+  if (key === 'reservations') {
+    // For reservations, we need to clear all cache keys that start with 'reservations_'
+    // since they include filter parameters
+    try {
+      // Get all cache keys and delete those starting with 'reservations_'
+      const db = await cache.db || await cache.init();
+      const transaction = db.transaction(['cache'], 'readwrite');
+      const store = transaction.objectStore('cache');
+      const request = store.openCursor();
+
+      return new Promise((resolve, reject) => {
+        request.onsuccess = (event) => {
+          const cursor = event.target.result;
+          if (cursor) {
+            if (cursor.value.key.startsWith('reservations_')) {
+              cursor.delete();
+            }
+            cursor.continue();
+          } else {
+            resolve();
+          }
+        };
+        request.onerror = () => reject(request.error);
+      });
+    } catch (error) {
+      console.error('Error clearing reservation caches:', error);
+      // Fallback to clearing entire cache if pattern deletion fails
+      return cache.clear();
+    }
+  } else {
+    return cache.delete(key);
+  }
+};

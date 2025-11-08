@@ -1,5 +1,5 @@
 import axios from "axios";
-import { cachedFetchCuratedOffers } from "../utils/apiCache";
+import { cachedFetchCuratedOffers, invalidateCache } from "../utils/apiCache";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
@@ -47,6 +47,8 @@ export const addOffer = async (formData, token) => {
         },
       }
     );
+    // Invalidate offers cache after mutation
+    invalidateCache('curatedOffers');
     return res.data.offer;
   } catch (error) {
     console.error("Error adding offer:", error);
@@ -73,6 +75,8 @@ export const updateOffer = async (id, formData, token) => {
         },
       }
     );
+    // Invalidate offers cache after mutation
+    invalidateCache('curatedOffers');
     return res.data.offer;
   } catch (error) {
     console.error("Error updating offer:", error);
@@ -96,6 +100,8 @@ export const deleteOffer = async (id, token) => {
         },
       }
     );
+    // Invalidate offers cache after mutation
+    invalidateCache('curatedOffers');
     return res.data;
   } catch (error) {
     console.error("Error deleting offer:", error);
