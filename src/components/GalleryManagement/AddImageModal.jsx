@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from "react";
 import { toast } from "react-toastify";
-import { addGalleryImages } from "@/services/galleryApi";
+import { addGalleryImages } from "../../services/galleryApi";
 import { AdminContext } from "../../context/AdminContext";
-import { compressImages, shouldCompress } from "../../utils/imageCompression";
+import { compressImage, shouldCompress } from "../../utils/imageCompression";
 
 const AddImageModal = ({ isOpen, onClose, onAddSuccess, activeTab }) => {
   const { getToken } = useContext(AdminContext);
@@ -77,7 +77,7 @@ const AddImageModal = ({ isOpen, onClose, onAddSuccess, activeTab }) => {
 
       if (filesToCompress.length > 0) {
         toast.info("Compressing images...");
-        const compressedFiles = await compressImages(filesToCompress);
+        const compressedFiles = await Promise.all(filesToCompress.map(compressImage));
         processedFiles = [...processedFiles, ...compressedFiles];
       }
 

@@ -1,17 +1,24 @@
 // src/services/reservationApi.js
 import axios from "axios";
 import { labelToSlug } from "../utils/typeMapper";
-import { invalidateCache } from "../utils/apiCache";
+import { cachedApiCall, invalidateCache } from "../utils/apiCache";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
-// Fetch list with filters
+// Fetch list with filters and caching
 export const fetchReservations = async (token, filters) => {
-  const res = await axios.get(`${API_URL}/reservations`, {
-    headers: { Authorization: `Bearer ${token}` },
-    params: filters,
-  });
-  return res.data;
+  const cacheKey = `reservations_${JSON.stringify(filters)}`;
+  return cachedApiCall(
+    async () => {
+      const res = await axios.get(`${API_URL}/reservations`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: filters,
+      });
+      return res.data;
+    },
+    cacheKey,
+    10 * 60 * 1000 // 10 minutes TTL
+  );
 };
 
 // Get single reservation by type+id

@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { addFacility } from "@/services/facilities";
 import { AdminContext } from "@/context/AdminContext";
 import { validateWordCount } from "../../utils/validation";
-import { compressImages, shouldCompress } from "../../utils/imageCompression";
+import { compressImage, shouldCompress } from "../../utils/imageCompression";
 
 export default function AddFacilityModal({ isOpen, onClose, onSave }) {
   const [formData, setFormData] = useState({
@@ -17,6 +17,7 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
   const [preview, setPreview] = useState(null);
   const [errors, setErrors] = useState({});
   const [descriptionError, setDescriptionError] = useState("");
+  const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
 
   const { getToken } = useContext(AdminContext);
@@ -88,6 +89,7 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
       return;
     }
 
+    setLoading(true);
     try {
       const submitData = new FormData();
       submitData.append("title", formData.title);
@@ -102,7 +104,7 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
         let processedImage = image;
         if (shouldCompress(image)) {
           toast.info("Compressing image...");
-          processedImage = await compressImages([image])[0];
+          processedImage = await compressImage(image);
         }
         submitData.append("image", processedImage);
       }
@@ -114,7 +116,8 @@ export default function AddFacilityModal({ isOpen, onClose, onSave }) {
     } catch (error) {
       console.error("Error adding facility:", error);
       setErrors({ submit: "Error adding facility. Please try again." });
-    }
+    } finally {
+      setLoading(false);
   };
 
   const wordCount = formData.description.trim().split(/\s+/).filter(word => word.length > 0).length;

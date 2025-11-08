@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { toast } from "react-toastify";
 import { aboutApi } from "../../services/aboutApi";
 import { AdminContext } from "@/context/AdminContext";
-import { compressImages, shouldCompress } from "../../utils/imageCompression";
+import { compressImage, shouldCompress } from "../../utils/imageCompression";
 
 const AddContent = ({ type, onContentAdded }) => {
   const [title, setTitle] = useState("");
@@ -36,7 +36,7 @@ const AddContent = ({ type, onContentAdded }) => {
         let processedImage = image;
         if (shouldCompress(image)) {
           toast.info("Compressing image...");
-          processedImage = await compressImages([image])[0];
+          processedImage = await compressImage(image);
         }
         formData.append("image", processedImage);
       }

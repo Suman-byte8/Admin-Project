@@ -22,8 +22,11 @@ export default function Home() {
         setLoading(true);
         const data = await userActivityApi.getRecentActivities(currentPage, 50);
         if (data.success) {
-          // Activities are already sorted from server (latest first)
-          setActivities(data.activities || []);
+          // Sort activities by timestamp in descending order (latest first)
+          const sortedActivities = (data.activities || []).sort((a, b) =>
+            new Date(b.timestamp) - new Date(a.timestamp)
+          );
+          setActivities(sortedActivities);
           setTotalPages(data.totalPages || 1);
         } else {
           setError(data.message || 'Failed to load activities');

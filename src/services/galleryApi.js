@@ -5,7 +5,7 @@ const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 
 // Get gallery images with caching, optionally filtered by tab
-export const fetchGalleryImages = async (tab = null) => {
+export const fetchGalleryImages = async (tab = null, token) => {
   try {
     // Try cached version first
     const cachedData = await cachedFetchGallery();
@@ -68,7 +68,7 @@ export const updateGalleryImage = async (imageId, formData, token) => {
 };
 
 // Delete gallery image
-export const deleteGalleryImage = async (imageId) => {
+export const deleteGalleryImage = async (imageId, token) => {
   try {
     const response = await axios.delete(`${API_URL}/content/gallery/admin/${imageId}`, {
       headers: {
