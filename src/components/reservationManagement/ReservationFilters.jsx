@@ -52,7 +52,7 @@ const ReservationFilters = ({ filters, setFilters }) => {
           />
         </button>
         {openDropdown === "type" && (
-          <div className="absolute mt-1 w-56 bg-white shadow-lg rounded-md border">
+          <div className="absolute mt-1 w-56 bg-white shadow-lg rounded-md border z-50">
             <ul className="py-1 text-sm text-gray-700">
               {[
                 ["accommodation", "Accommodation"],
@@ -87,7 +87,7 @@ const ReservationFilters = ({ filters, setFilters }) => {
           />
         </button>
         {openDropdown === "status" && (
-          <div className="absolute mt-1 w-48 bg-white shadow-lg rounded-md border">
+          <div className="absolute mt-1 w-48 bg-white shadow-lg rounded-md border z-50">
             <ul className="py-1 text-sm text-gray-700">
               {["All Status", "Confirmed", "Pending", "Cancelled"].map((opt) => (
                 <li
@@ -120,7 +120,7 @@ const ReservationFilters = ({ filters, setFilters }) => {
           />
         </button>
         {openDropdown === "sortBy" && (
-          <div className="absolute mt-1 w-48 bg-white shadow-lg rounded-md border">
+          <div className="absolute mt-1 w-48 bg-white shadow-lg rounded-md border z-50">
             <ul className="py-1 text-sm text-gray-700">
               <li
                 onClick={() => handleSelect("sortBy", "date_desc")}

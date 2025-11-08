@@ -224,10 +224,10 @@ const ReservationTable = ({
                 </span>
               </td>
               <td className="p-3 text-gray-600">
-                {new Date(r.arrivalDate || r.createdAt).toLocaleDateString()} 
+                {new Date(r.arrivalDate || r.createdAt).toLocaleDateString('en-GB')}
                 {r.departureDate && (
                   <div className="text-xs text-gray-500">
-                    to {new Date(r.departureDate).toLocaleDateString()}
+                    to {new Date(r.departureDate).toLocaleDateString('en-GB')}
                   </div>
                 )}
               </td>
