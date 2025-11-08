@@ -1,17 +1,39 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { toast } from "react-toastify";
 import { addGalleryImages } from "@/services/galleryApi";
+import { AdminContext } from "../../context/AdminContext";
 
 const AddImageModal = ({ isOpen, onClose, onAddSuccess, activeTab }) => {
+  const { getToken } = useContext(AdminContext);
   const [imageFiles, setImageFiles] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
   const [tab, setTab] = useState(activeTab || "Rooms");
   const [title, setTitle] = useState("");
   const [caption, setCaption] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setTab(activeTab || "Rooms");
   }, [activeTab]);
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setImageFiles([]);
+      setPreviewUrls([]);
+      setTab(activeTab || "Rooms");
+      setTitle("");
+      setCaption("");
+    }
+  }, [isOpen, activeTab]);
+
+  // Clean up preview URLs
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [previewUrls]);
 
   if (!isOpen) return null;
 
@@ -22,8 +44,12 @@ const AddImageModal = ({ isOpen, onClose, onAddSuccess, activeTab }) => {
     if (oversized) {
       toast.error("Each image should be less than 10MB");
       setImageFiles([]);
+      setPreviewUrls([]);
     } else {
       setImageFiles(fileList);
+      // Create preview URLs
+      const urls = fileList.map(file => URL.createObjectURL(file));
+      setPreviewUrls(urls);
     }
   };
 
@@ -39,6 +65,7 @@ const AddImageModal = ({ isOpen, onClose, onAddSuccess, activeTab }) => {
       return;
     }
 
+    setLoading(true);
     const formData = new FormData();
     imageFiles.forEach((file) => formData.append("images", file));
     formData.append("tab", tab);
@@ -46,7 +73,12 @@ const AddImageModal = ({ isOpen, onClose, onAddSuccess, activeTab }) => {
     if (caption.trim() !== "") formData.append("caption", caption.trim());
 
     try {
-      const response = await addGalleryImages(formData);
+      const token = getToken();
+      if (!token) {
+        toast.error("Authentication token missing");
+        return;
+      }
+      const response = await addGalleryImages(formData, token);
       onAddSuccess(response);
       onClose();
       setImageFiles([]);
@@ -56,12 +88,22 @@ const AddImageModal = ({ isOpen, onClose, onAddSuccess, activeTab }) => {
       toast.success("Image(s) added successfully!");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to add images");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 px-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fadeIn">
+      <div className={`bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fadeIn ${loading ? 'relative' : ''}`}>
+        {loading && (
+          <div className="absolute inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-20 rounded-xl">
+            <div className="text-white text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+              <p>Adding...</p>
+            </div>
+          </div>
+        )}
         
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
@@ -101,13 +143,20 @@ const AddImageModal = ({ isOpen, onClose, onAddSuccess, activeTab }) => {
 
           {/* Selected Files Preview */}
           {imageFiles.length > 0 && (
-            <div className="bg-gray-50 rounded-lg p-3 max-h-28 overflow-y-auto border border-gray-200">
-              <strong className="text-sm text-gray-600 block mb-1">Selected Files:</strong>
-              <ul className="text-sm text-gray-700 list-disc list-inside space-y-1">
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <strong className="text-sm text-gray-600 block mb-2">Selected Images:</strong>
+              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                 {imageFiles.map((file, idx) => (
-                  <li key={idx}>{file.name}</li>
+                  <div key={idx} className="relative">
+                    <img
+                      src={previewUrls[idx]}
+                      alt={`Preview ${idx + 1}`}
+                      className="w-full h-20 object-cover rounded-lg border border-gray-300"
+                    />
+                    <p className="text-xs text-gray-500 mt-1 truncate">{file.name}</p>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 

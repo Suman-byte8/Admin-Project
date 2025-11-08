@@ -1,14 +1,17 @@
-# TODO: Add React Toasts and Loaders for Reservation Operations
+# TODO: Apply Debouncing and Loading Overlays in Admin Panel
 
-## Tasks
-- [x] Add deleteMeetingReservation function to Admin Panel/src/services/reservationApi.js
-- [ ] Update Admin Panel/src/components/reservationManagement/ReservationTable.jsx:
-  - [ ] Import toast from react-toastify
-  - [ ] Import deleteMeetingReservation from reservationApi
-  - [ ] Add handleDelete function with confirmation and toast messages
-  - [ ] Replace alert() with toast.success() and toast.error() in handleConfirm and handleCancel
-  - [ ] Add onClick handler to Delete button
-  - [ ] Ensure disabled state for Delete button during operation
+## 1. Remove Artificial Delay in Reservations
+- [x] Remove forced 5-8 second delay in ReservationManagement.jsx loadData function
 
-## Followup
-- [ ] Test confirm, cancel, delete operations to verify toasts appear and loaders work
+## 2. Add Loading Overlays to Save/Update Forms
+- [x] Add loading overlay to AddContent.jsx (AboutManagement)
+- [x] Add loading overlay to AddOffer.jsx (OfferManagement)
+- [x] Add loading overlay to AddRoomModal.jsx (RoomManagement)
+- [x] Add loading overlay to AddImageModal.jsx (GalleryManagement)
+- [x] Add loading overlay to HomePageBanner.jsx (PageManagement)
+- [x] Add loading overlay to AddFacilityModal.jsx (Facility Management)
+
+## 3. Test and Verify
+- [ ] Test reservation loading speed
+- [ ] Test loading overlays on all forms
+- [ ] Ensure debouncing works on filters/search

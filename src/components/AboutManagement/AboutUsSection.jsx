@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import { toast } from "react-toastify";
 import { aboutApi } from "../../services/aboutApi";
 import { AdminContext } from "@/context/AdminContext";
+import { validateWordCount } from "../../utils/validation";
 
 const AboutUsSection = () => {
   const [aboutData, setAboutData] = useState({
@@ -12,6 +13,7 @@ const AboutUsSection = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [descriptionError, setDescriptionError] = useState("");
   const fileInputRef = useRef(null);
 
   const { getToken } = useContext(AdminContext);
@@ -47,6 +49,20 @@ const AboutUsSection = () => {
     }));
   };
 
+  const handleDescriptionChange = (value) => {
+    setAboutData(prev => ({
+      ...prev,
+      description: value
+    }));
+
+    const validation = validateWordCount(value, 60, 100);
+    if (!validation.isValid) {
+      setDescriptionError(validation.message);
+    } else {
+      setDescriptionError("");
+    }
+  };
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -73,6 +89,13 @@ const AboutUsSection = () => {
   };
 
   const handleSave = async () => {
+    // Validate description
+    const validation = validateWordCount(aboutData.description, 60, 100);
+    if (!validation.isValid) {
+      setDescriptionError(validation.message);
+      return;
+    }
+
     try {
       setSaving(true);
       setMessage("");
@@ -111,6 +134,9 @@ const AboutUsSection = () => {
     );
   }
 
+  const wordCount = aboutData.description.trim().split(/\s+/).filter(word => word.length > 0).length;
+  const isWordCountValid = wordCount >= 60 && wordCount <= 100;
+
   return (
     <section className="bg-white p-6 rounded-lg shadow-md mb-8">
       <div className="flex justify-between items-center mb-4">
@@ -119,19 +145,15 @@ const AboutUsSection = () => {
         </h2>
         <button
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || !isWordCountValid}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           {saving ? "Saving..." : "Publish Changes"}
         </button>
       </div>
-      
+
       {message && (
-        <div className={`mb-4 p-3 rounded ${
-          message.includes("success") 
-            ? "bg-green-100 text-green-700 border border-green-200" 
-            : "bg-red-100 text-red-700 border border-red-200"
-        }`}>
+        <div className={`mb-4 p-3 rounded ${message.includes("success") ? "bg-green-100 text-green-700 border border-green-200" : "bg-red-100 text-red-700 border border-red-200"}`}>
           {message}
         </div>
       )}
@@ -197,16 +219,24 @@ const AboutUsSection = () => {
             className="block text-sm font-medium text-gray-600"
             htmlFor="about-description"
           >
-            Description
+            Description (60-100 words)
           </label>
           <textarea
-            className="w-full mt-1 p-2 border border-gray-300 rounded-md outline-0 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            className={`w-full mt-1 p-2 border rounded-md outline-0 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none ${
+              descriptionError ? 'border-red-500' : 'border-gray-300'
+            }`}
             id="about-description"
             rows="6"
             value={aboutData.description}
-            onChange={(e) => handleInputChange("description", e.target.value)}
+            onChange={(e) => handleDescriptionChange(e.target.value)}
             placeholder="Enter About Us description"
-          ></textarea>
+          />
+          <div className="flex justify-between items-center mt-1">
+            <span className={`text-sm ${isWordCountValid ? 'text-gray-500' : 'text-red-500'}`}>
+              {wordCount}/60-100 words
+            </span>
+            {descriptionError && <span className="text-sm text-red-500">{descriptionError}</span>}
+          </div>
         </div>
       </div>
     </section>

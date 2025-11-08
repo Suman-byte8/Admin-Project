@@ -22,7 +22,7 @@ const ReservationManagement = () => {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  // ✅ Load reservations with forced delay
+  // ✅ Load reservations without delay
   const loadData = async () => {
     const token = getToken();
     if (!token) return;
@@ -33,11 +33,6 @@ const ReservationManagement = () => {
       setData(result.items || []);
       setTotal(result.total);
       setTotalPages(result.totalPages || 0);
-
-      // Force loading state for 5-8 seconds (random between 5-8 seconds)
-      const delayTime = 5000 + Math.random() * 3000; // 5000-8000ms
-      await new Promise(resolve => setTimeout(resolve, delayTime));
-
     } finally {
       setLoading(false);
     }

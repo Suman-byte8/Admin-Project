@@ -2,7 +2,7 @@ import axios from "axios";
 import { cachedFetchGallery } from "../utils/apiCache";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
-const token = import.meta.env.VITE_TEMP_ADMIN_TOKEN;
+
 
 // Get gallery images with caching, optionally filtered by tab
 export const fetchGalleryImages = async (tab = null) => {
@@ -32,7 +32,7 @@ export const fetchGalleryImages = async (tab = null) => {
 };
 
 // Add new gallery images
-export const addGalleryImages = async (formData) => {
+export const addGalleryImages = async (formData, token) => {
   try {
     const response = await axios.post(`${API_URL}/content/gallery/admin`, formData, {
       headers: {
