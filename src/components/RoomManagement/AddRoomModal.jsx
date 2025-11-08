@@ -11,6 +11,9 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
 
+   const [loading, setLoading] = useState(false);
+  
+
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
 
