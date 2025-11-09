@@ -3,6 +3,7 @@ import { MdCancel } from "react-icons/md";
 import { FaUpload, FaTimes } from "react-icons/fa";
 
 const EditRoomModal = ({ isOpen, onClose, onSave, room }) => {
+  const [loading, setLoading] = useState(false);
   const [roomData, setRoomData] = useState({
     roomType: "",
     roomCapacity: 2,
@@ -75,23 +76,36 @@ const EditRoomModal = ({ isOpen, onClose, onSave, room }) => {
     setImages(images.filter((_, i) => i !== idx));
   };
 
-  const handleSave = () => {
-    const formData = new FormData();
-    formData.append("roomType", roomData.roomType);
-    formData.append("roomCapacity", roomData.roomCapacity);
-    formData.append("roomPrice", roomData.roomPrice);
-    formData.append("roomDescription", roomData.roomDescription);
-    formData.append("removedImages", JSON.stringify(removedImages));
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("roomType", roomData.roomType);
+      formData.append("roomCapacity", roomData.roomCapacity);
+      formData.append("roomPrice", roomData.roomPrice);
+      formData.append("roomDescription", roomData.roomDescription);
+      formData.append("removedImages", JSON.stringify(removedImages));
 
-    if (heroImage) formData.append("heroImage", heroImage);
-    images.forEach((img) => formData.append("roomImages", img));
+      if (heroImage) formData.append("heroImage", heroImage);
+      images.forEach((img) => formData.append("roomImages", img));
 
-    onSave(formData);
+      await onSave(formData);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 px-3">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col relative animate-fadeIn">
+      <div className={`bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col relative animate-fadeIn ${loading ? 'relative' : ''}`}>
+        {loading && (
+          <div className="absolute inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-20 rounded-2xl">
+            <div className="text-white text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+              <p>Saving...</p>
+            </div>
+          </div>
+        )}
         {/* Header */}
         <div className="sticky top-0 flex justify-between items-center border-b p-5 bg-white">
           <h2 className="text-xl font-semibold text-gray-800">✏️ Edit Room</h2>
@@ -265,8 +279,10 @@ const EditRoomModal = ({ isOpen, onClose, onSave, room }) => {
           <button
             type="button"
             onClick={handleSave}
-            className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow"
+            disabled={loading}
+            className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-400 shadow transition flex items-center gap-2"
           >
+            {loading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>}
             Save Changes
           </button>
         </div>

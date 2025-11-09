@@ -9,6 +9,7 @@ const EditImageModal = ({ isOpen, onClose, onUpdateSuccess, image, activeTab }) 
   const [caption, setCaption] = useState("");
   const [tab, setTab] = useState(activeTab || "Rooms");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const { getToken } = useContext(AdminContext);
   const token = getToken();
@@ -36,6 +37,7 @@ const EditImageModal = ({ isOpen, onClose, onUpdateSuccess, image, activeTab }) 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     const formData = new FormData();
     if (imageFile) formData.append("image", imageFile);
@@ -54,13 +56,23 @@ const EditImageModal = ({ isOpen, onClose, onUpdateSuccess, image, activeTab }) 
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update image");
       toast.error(err.response?.data?.message || "Failed to update image");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 px-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col animate-fadeIn">
-        
+      <div className={`bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col animate-fadeIn ${loading ? 'relative' : ''}`}>
+        {loading && (
+          <div className="absolute inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-20 rounded-xl">
+            <div className="text-white text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
+              <p>Updating...</p>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h2 className="text-xl font-semibold text-gray-800">Edit Image</h2>
@@ -155,8 +167,10 @@ const EditImageModal = ({ isOpen, onClose, onUpdateSuccess, image, activeTab }) 
           <button
             type="submit"
             onClick={handleSubmit}
-            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition"
+            disabled={loading}
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-400 shadow-sm transition flex items-center gap-2"
           >
+            {loading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>}
             Update Image
           </button>
         </div>
