@@ -17,6 +17,7 @@ import {
   getMemberById,
   updateMembershipStatus,
   deleteMembership,
+  updateMembershipDates,
 } from "../services/membershipApi";
 import { toast } from "react-toastify";
 
@@ -85,7 +86,7 @@ const DetailRow = ({ icon: Icon, label, value, isBordered = false }) => (
 );
 
 // 4️⃣ Member Card — modernized with header gradient, avatar ring, and clean section dividers
-const MemberCard = ({ member, membershipType, setMembershipType }) => (
+const MemberCard = ({ member, membershipType, setMembershipType, setMember, onMemberChange }) => (
   <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 transition-shadow duration-300 hover:shadow-xl">
     {/* Header */}
     <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 md:p-8">
@@ -101,6 +102,11 @@ const MemberCard = ({ member, membershipType, setMembershipType }) => (
               <FaCalendarAlt className="mr-1" /> Joined{" "}
               {new Date(member.memberShipStartDate).toLocaleDateString()}
             </span>
+            {member.status === "approved" && member.memberShipEndDate && new Date(member.memberShipEndDate) < new Date() && (
+              <span className="inline-flex items-center text-xs text-red-600 font-semibold">
+                <FaTimes className="mr-1" /> Membership Expired
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -133,7 +139,12 @@ const MemberCard = ({ member, membershipType, setMembershipType }) => (
             </dt>
             <dd>
               {member.status === "approved" ? (
-                <span className="text-base text-gray-900">{member.memberShipType || "—"}</span>
+                <select value={member.memberShipType || ""} onChange={(e) => onMemberChange({ ...member, memberShipType: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                  <option value="Silver Guest">Silver Guest</option>
+                  <option value="Gold Traveler">Gold Traveler</option>
+                  <option value="Platinum Premier">Platinum Premier</option>
+                  <option value="Corporate/Business Elite">Corporate/Business Elite</option>
+                </select>
               ) : member.status === "pending" ? (
                 <select
                   value={membershipType}
@@ -153,31 +164,59 @@ const MemberCard = ({ member, membershipType, setMembershipType }) => (
           </div>
         </div>
 
+
+
         <DetailRow
           icon={FaCalendarAlt}
           label="Start Date"
           value={new Date(member.memberShipStartDate).toLocaleDateString()}
           isBordered
         />
-        <DetailRow
-          icon={FaCalendarAlt}
-          label="End Date"
-          value={
-            member.memberShipEndDate
-              ? new Date(member.memberShipEndDate).toLocaleDateString()
-              : "Lifetime / Ongoing"
-          }
-          isBordered
-        />
+        {/* End Date */}
+        <div className="flex items-start gap-4 p-5 md:p-6 border-t md:border-l border-gray-100 hover:bg-gray-50 transition-colors duration-150">
+          <FaCalendarAlt className="text-indigo-500 mt-1 flex-shrink-0" size={20} />
+          <div className="flex-grow min-w-0">
+            <dt className="text-xs uppercase tracking-wide font-semibold text-gray-500 mb-1">
+              End Date
+            </dt>
+            <dd>
+              {member.status === "approved" ? (
+                <input
+                  type="date"
+                  value={member.memberShipEndDate ? new Date(member.memberShipEndDate).toISOString().split('T')[0] : ''}
+                  onChange={(e) => onMemberChange({ ...member, memberShipEndDate: e.target.value })}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              ) : (
+                <span className="text-base text-gray-900 break-words">
+                  {member.memberShipEndDate
+                    ? new Date(member.memberShipEndDate).toLocaleDateString()
+                    : "Lifetime / Ongoing"}
+                </span>
+              )}
+            </dd>
+          </div>
+        </div>
       </dl>
     </div>
   </div>
 );
 
 // 5️⃣ Action Buttons — modern pill-shaped, better disabled states, loading states (optional), focus rings
-const ActionButtons = ({ member, setMember, membershipType }) => {
+const ActionButtons = ({ member, setMember, membershipType, onConfirmChanges }) => {
   const navigate = useNavigate();
   const [loadingAction, setLoadingAction] = useState(null);
+
+  const handleConfirmChanges = async () => {
+    setLoadingAction("confirm");
+    try {
+      await onConfirmChanges();
+    } catch (error) {
+      // Error is handled in onConfirmChanges
+    } finally {
+      setLoadingAction(null);
+    }
+  };
 
   const handleUpdateStatus = async (status) => {
     // No type? Don't even trigger the request
@@ -188,7 +227,7 @@ const ActionButtons = ({ member, setMember, membershipType }) => {
 
     setLoadingAction(status);
     try {
-      const updatedMember = await updateMembershipStatus(member._id, status, membershipType);
+      const updatedMember = await updateMembershipStatus(member._id, status, membershipType, member.memberShipStartDate, member.memberShipEndDate);
       setMember(updatedMember);
       toast.success(`✅ Membership ${status.toLowerCase()} successfully!`);
     } catch (error) {
@@ -250,9 +289,18 @@ const ActionButtons = ({ member, setMember, membershipType }) => {
       )}
 
       {member.status === "approved" && (
+        <>
+        <button
+            onClick={handleConfirmChanges}
+            disabled={loadingAction === "confirm"}
+            className="flex items-center justify-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 px-5 py-3 text-sm font-medium text-white shadow transition"
+        >
+            {loadingAction === "confirm" ? "Confirming..." : <><FaCheck /> Confirm Changes</>}
+        </button>
         <span className="flex items-center justify-center gap-2 rounded-full bg-green-100 px-5 py-3 text-sm font-medium text-green-800 border border-green-200">
           <FaCheck className="text-green-600" /> Approved
         </span>
+        </>
       )}
 
       {member.status === "rejected" && (
@@ -273,6 +321,42 @@ const ActionButtons = ({ member, setMember, membershipType }) => {
   );
 };
 
+const DateUpdateModal = ({ isOpen, onClose, member, onSave }) => {
+    const [endDate, setEndDate] = useState(member.memberShipEndDate);
+
+    useEffect(() => {
+        setEndDate(member.memberShipEndDate);
+    }, [member]);
+
+    const handleSave = () => {
+        onSave(member.memberShipStartDate, endDate);
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 backdrop-blur-xs bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-8 rounded-lg shadow-lg">
+                <h2 className="text-2xl font-bold mb-4">Update Membership End Date</h2>
+                <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700">End Date</label>
+                    <input
+                        type="date"
+                        value={endDate ? new Date(endDate).toISOString().split('T')[0] : ''}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        autoFocus
+                    />
+                </div>
+                <div className="flex justify-end gap-4">
+                    <button onClick={onClose} className="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
+                    <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white rounded-lg">Save</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // 6️⃣ Main Page — added container padding, better heading, optional skeleton loader
 const MemberDetailsPage = () => {
   const { id } = useParams();
@@ -280,6 +364,21 @@ const MemberDetailsPage = () => {
   const [membershipType, setMembershipType] = useState(""); // added here
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const onMemberChange = (updatedMember) => {
+    setMember(updatedMember);
+  };
+
+  const handleConfirmChanges = async () => {
+    try {
+      const updatedMember = await updateMembershipStatus(member._id, member.status, member.memberShipType, member.memberShipStartDate, member.memberShipEndDate);
+      setMember(updatedMember);
+      toast.success("✅ Changes confirmed successfully!");
+    } catch (error) {
+      toast.error("❌ Failed to confirm changes. Please try again.");
+    }
+  };
 
   useEffect(() => {
     const fetchMember = async () => {
@@ -298,6 +397,17 @@ const MemberDetailsPage = () => {
     fetchMember();
   }, [id]);
 
+  const handleUpdateDates = async (startDate, endDate) => {
+    try {
+        const updatedMember = await updateMembershipDates(member._id, startDate, endDate);
+        setMember(updatedMember);
+        toast.success("✅ Membership dates updated successfully!");
+        setIsModalOpen(false);
+    } catch (error) {
+        toast.error("❌ Failed to update membership dates. Please try again.");
+    }
+  };
+
   if (loading) return <div>Loading…</div>;
   if (error) return <div>Error: {error}</div>;
   if (!member) return <div>Member not found</div>;
@@ -308,8 +418,9 @@ const MemberDetailsPage = () => {
       <div className="mx-auto max-w-4xl">
         <h1 className="text-3xl font-extrabold mb-2">Membership Details</h1>
         <p className="text-gray-600 mb-8">Review and manage member information.</p>
-        <MemberCard member={member} membershipType={membershipType} setMembershipType={setMembershipType} />
-        <ActionButtons member={member} setMember={setMember} membershipType={membershipType} />
+        <MemberCard member={member} membershipType={membershipType} setMembershipType={setMembershipType} setMember={setMember} onMemberChange={onMemberChange} />
+        <ActionButtons member={member} setMember={setMember} membershipType={membershipType} onConfirmChanges={handleConfirmChanges} />
+        <DateUpdateModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} member={member} onSave={handleUpdateDates} />
       </div>
     </main>
   );

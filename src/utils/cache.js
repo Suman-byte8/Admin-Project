@@ -46,3 +46,28 @@ export async function clearCache(key) {
   const store = transaction.objectStore('cache');
   store.delete(key);
 }
+
+// Default export for compatibility with apiCache.js
+const cache = {
+  get: getCachedData,
+  set: setCachedData,
+  delete: clearCache,
+  clear: async () => {
+    const db = await openDB();
+    const transaction = db.transaction(['cache'], 'readwrite');
+    const store = transaction.objectStore('cache');
+    store.clear();
+  },
+  size: async () => {
+    const db = await openDB();
+    const transaction = db.transaction(['cache'], 'readonly');
+    const store = transaction.objectStore('cache');
+    return new Promise((resolve) => {
+      const request = store.count();
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => resolve(0);
+    });
+  }
+};
+
+export default cache;

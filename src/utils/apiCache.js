@@ -1,5 +1,5 @@
 // API caching utility using IndexedDB
-import cache from './indexedDB.js';
+import cache from './cache.js';
 
 // Cache TTL configurations (in milliseconds)
 const CACHE_TTL = {
