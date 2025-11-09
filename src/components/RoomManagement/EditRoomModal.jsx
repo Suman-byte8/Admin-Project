@@ -5,6 +5,7 @@ import { FaUpload, FaTimes } from "react-icons/fa";
 const EditRoomModal = ({ isOpen, onClose, onSave, room }) => {
   const [roomData, setRoomData] = useState({
     roomType: "",
+    roomCapacity: 2,
     roomPrice: "",
     roomDescription: "",
   });
@@ -26,6 +27,7 @@ const EditRoomModal = ({ isOpen, onClose, onSave, room }) => {
     if (room) {
       setRoomData({
         roomType: room.roomType || "",
+        roomCapacity: room.roomCapacity || 2,
         roomPrice: room.roomPrice || "",
         roomDescription: room.roomDescription || "",
       });
@@ -76,6 +78,7 @@ const EditRoomModal = ({ isOpen, onClose, onSave, room }) => {
   const handleSave = () => {
     const formData = new FormData();
     formData.append("roomType", roomData.roomType);
+    formData.append("roomCapacity", roomData.roomCapacity);
     formData.append("roomPrice", roomData.roomPrice);
     formData.append("roomDescription", roomData.roomDescription);
     formData.append("removedImages", JSON.stringify(removedImages));
@@ -99,8 +102,8 @@ const EditRoomModal = ({ isOpen, onClose, onSave, room }) => {
 
         {/* Body */}
         <div className="px-6 py-4 overflow-y-auto space-y-5">
-          {/* Room Type + Price */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Room Type + Capacity + Price */}
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Room Type</label>
               <select
@@ -114,6 +117,18 @@ const EditRoomModal = ({ isOpen, onClose, onSave, room }) => {
                 <option>Suite</option>
                 <option>Family Suite</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Capacity</label>
+              <input
+                type="number"
+                name="roomCapacity"
+                value={roomData.roomCapacity}
+                onChange={handleInputChange}
+                min="1"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 2"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Price / Night</label>

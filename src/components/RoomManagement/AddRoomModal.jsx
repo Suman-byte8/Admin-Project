@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 const AddRoomModal = ({ isOpen, onClose, onSave }) => {
   const [roomNumber, setRoomNumber] = useState("");
   const [roomType, setRoomType] = useState("Deluxe Room");
+  const [capacity, setCapacity] = useState(2);
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
 
@@ -92,6 +93,7 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
     const formData = new FormData();
     formData.append("roomName", roomNumber);
     formData.append("roomType", roomType);
+    formData.append("roomCapacity", capacity);
     formData.append("roomPrice", price);
     formData.append("roomDescription", description);
     if (processedHeroImage) formData.append("heroImage", processedHeroImage);
@@ -136,8 +138,8 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
             />
           </div>
 
-          {/* Room Type + Price */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Room Type + Capacity + Price */}
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Room Type</label>
               <select
@@ -150,6 +152,17 @@ const AddRoomModal = ({ isOpen, onClose, onSave }) => {
                 <option>Suite</option>
                 <option>Family Suite</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Capacity</label>
+              <input
+                type="number"
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+                min="1"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 2"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Price / Night</label>
