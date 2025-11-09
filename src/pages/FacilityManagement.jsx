@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useContext } from "react";
 import { toast } from "react-toastify";
-import { FaPlus, FaEdit, FaTrash, FaSpinner } from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaSpinner, FaSync } from "react-icons/fa";
 import AddFacilityModal from "../components/Facility Management/AddFacilityModal";
 import EditFacilityModal from "../components/Facility Management/EditFacilityModal";
 import { getFacilities, addFacility, updateFacility, deleteFacility } from "../services/facilities";
 import { AdminContext } from "@/context/AdminContext";
+import { getCachedData, setCachedData } from "../utils/cache";
+
+const CACHE_KEY = 'facilities';
 
 export default function FacilityManagement() {
   const [facilities, setFacilities] = useState([]);
@@ -18,19 +21,32 @@ export default function FacilityManagement() {
   const { getToken, checkTokenAndRedirect } = useContext(AdminContext);
   const token = getToken();
 
+  const fetchFacilities = async (forceFresh = false) => {
+    try {
+      setLoading(true);
+      if (!forceFresh) {
+        const cached = await getCachedData(CACHE_KEY);
+        if (cached) {
+          setFacilities(cached);
+          setError(null);
+          setLoading(false);
+          return;
+        }
+      }
+      const data = await getFacilities(token, true);
+      setFacilities(data);
+      await setCachedData(CACHE_KEY, data);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError(err?.response?.status === 401 ? "Unauthorized. Please log in again." : "Failed to fetch facilities");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     checkTokenAndRedirect();
-    const fetchFacilities = async () => {
-      try {
-        const data = await getFacilities(token);
-        setFacilities(data);
-      } catch (err) {
-        console.error(err);
-        setError(err?.response?.status === 401 ? "Unauthorized. Please log in again." : "Failed to fetch facilities");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchFacilities();
   }, [token, checkTokenAndRedirect]);
 
@@ -40,6 +56,7 @@ export default function FacilityManagement() {
       await addFacility(formData, token);
       const updatedFacilities = await getFacilities(token);
       setFacilities(updatedFacilities);
+      await setCachedData(CACHE_KEY, updatedFacilities);
       setIsAddOpen(false);
       toast.success("Facility added successfully!");
     } catch (err) {
@@ -51,9 +68,9 @@ export default function FacilityManagement() {
   const handleUpdateFacility = async (id, formData) => {
     try {
       const updated = await updateFacility(id, formData, token);
-      setFacilities((prev) =>
-        prev.map((facility) => (facility._id === id ? updated : facility))
-      );
+      const updatedFacilities = facilities.map((facility) => (facility._id === id ? updated : facility));
+      setFacilities(updatedFacilities);
+      await setCachedData(CACHE_KEY, updatedFacilities);
       setIsEditOpen(false);
       setSelectedFacility(null);
       toast.success("Facility updated successfully!");
@@ -67,7 +84,9 @@ export default function FacilityManagement() {
     if (!confirm("Are you sure you want to delete this facility?")) return;
     try {
       await deleteFacility(id, token);
-      setFacilities((prev) => prev.filter((facility) => facility._id !== id));
+      const updatedFacilities = facilities.filter((facility) => facility._id !== id);
+      setFacilities(updatedFacilities);
+      await setCachedData(CACHE_KEY, updatedFacilities);
       toast.success("Facility deleted successfully!");
     } catch (err) {
       console.error(err);
@@ -93,12 +112,21 @@ export default function FacilityManagement() {
       {/* Header */}
       <div className="flex justify-between items-center mb-12">
         <h1 className="text-3xl md:text-4xl font-bold tracking-wide">Our Facilities</h1>
-        <button
-          onClick={() => setIsAddOpen(true)}
-          className="bg-[#2c5e6e] text-white px-6 py-3 rounded-lg hover:bg-[#244c58] flex items-center gap-2 shadow"
-        >
-          <FaPlus /> Add Facility
-        </button>
+        <div className="flex gap-4">
+          <button
+            onClick={() => fetchFacilities(true)}
+            disabled={loading}
+            className="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 disabled:bg-blue-400 flex items-center gap-2 shadow"
+          >
+            <FaSync className={`text-sm ${loading ? 'animate-spin' : ''}`} /> Refresh
+          </button>
+          <button
+            onClick={() => setIsAddOpen(true)}
+            className="bg-[#2c5e6e] text-white px-6 py-3 rounded-lg hover:bg-[#244c58] flex items-center gap-2 shadow"
+          >
+            <FaPlus /> Add Facility
+          </button>
+        </div>
       </div>
 
       {/* Grid */}
@@ -169,7 +197,10 @@ export default function FacilityManagement() {
       {selectedFacility && (
         <EditFacilityModal
           isOpen={isEditOpen}
-          onClose={() => setIsEditOpen(false)}
+          onClose={() => {
+            setIsEditOpen(false);
+            setSelectedFacility(null);
+          }}
           onSave={(formData) => handleUpdateFacility(selectedFacility._id, formData)}
           facility={selectedFacility}
         />

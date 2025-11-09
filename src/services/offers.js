@@ -4,16 +4,19 @@ import { cachedFetchCuratedOffers, invalidateCache } from "../utils/apiCache";
 const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 /**
- * Fetches all curated offers with caching.
+ * Fetches all curated offers with optional caching.
  * @param {string} token - The authentication token.
+ * @param {boolean} forceFresh - If true, bypasses cache and fetches fresh data.
  * @returns {Promise<any>} The response data containing offers.
  */
-export const getOffers = async (token) => {
+export const getOffers = async (token, forceFresh = false) => {
   try {
-    // Try cached version first
-    const cachedData = await cachedFetchCuratedOffers();
-    if (cachedData) {
-      return cachedData.offers || cachedData;
+    // Try cached version first unless forceFresh is true
+    if (!forceFresh) {
+      const cachedData = await cachedFetchCuratedOffers();
+      if (cachedData) {
+        return cachedData.offers || cachedData;
+      }
     }
 
     // Fallback to API call with auth

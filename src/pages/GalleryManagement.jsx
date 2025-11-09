@@ -6,9 +6,13 @@ import GalleryTabs from "@/components/GalleryManagement/GalleryTabs";
 import AddImageModal from "@/components/GalleryManagement/AddImageModal";
 import EditImageModal from "@/components/GalleryManagement/EditImageModal";
 import ImageSkeleton from "@/components/GalleryManagement/ImageSkeleton";
+import { RefreshCw } from "lucide-react";
 
 import { fetchGalleryImages, deleteGalleryImage } from "@/services/galleryApi";
 import { AdminContext } from "@/context/AdminContext";
+import { getCachedData, setCachedData } from "../utils/cache";
+
+const CACHE_KEY_PREFIX = 'gallery_';
 
 const GalleryManagement = () => {
   const { getToken } = useContext(AdminContext);
@@ -35,6 +39,7 @@ const GalleryManagement = () => {
       const token = getToken();
       const data = await fetchGalleryImages(tab, token);
       setImages(data);
+      await setCachedData(CACHE_KEY_PREFIX + tab, data);
       setError("");
     } catch (err) {
       setError("Failed to fetch images");
@@ -57,7 +62,9 @@ const GalleryManagement = () => {
 
   const handleAddImage = (newImages) => {
     const imgs = Array.isArray(newImages) ? newImages : [newImages];
-    setImages((prev) => [...imgs, ...prev]);
+    const updatedImages = [...imgs, ...images];
+    setImages(updatedImages);
+    setCachedData(CACHE_KEY_PREFIX + activeTab, updatedImages);
   };
 
   const handleUpdateClick = (image) => {
@@ -72,9 +79,9 @@ const GalleryManagement = () => {
   };
 
   const handleUpdateImage = (updatedImage) => {
-    setImages((prev) =>
-      prev.map((img) => (img._id === updatedImage._id ? updatedImage : img))
-    );
+    const updatedImages = images.map((img) => (img._id === updatedImage._id ? updatedImage : img));
+    setImages(updatedImages);
+    setCachedData(CACHE_KEY_PREFIX + activeTab, updatedImages);
   };
 
   const handleDeleteClick = async (imageId) => {
@@ -82,7 +89,9 @@ const GalleryManagement = () => {
     try {
       const token = getToken();
       await deleteGalleryImage(imageId, token);
-      setImages((prev) => prev.filter((img) => img._id !== imageId));
+      const updatedImages = images.filter((img) => img._id !== imageId);
+      setImages(updatedImages);
+      await setCachedData(CACHE_KEY_PREFIX + activeTab, updatedImages);
       toast.success("Image deleted successfully!");
     } catch (err) {
       toast.error("Failed to delete image");
@@ -112,9 +121,19 @@ const GalleryManagement = () => {
           <GalleryHeader onAdd={handleAddClick} />
           <GalleryTabs active={activeTab} setActive={setActiveTab} />
 
-          <h3 className="text-[#111418] text-lg font-bold px-4 pb-2 pt-4">
-            Current Gallery
-          </h3>
+          <div className="flex items-center justify-between px-4 pb-2 pt-4">
+            <h3 className="text-[#111418] text-lg font-bold">
+              Current Gallery
+            </h3>
+            <button
+              onClick={() => fetchImages(activeTab)}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md transition-colors duration-200"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
 
           {error && <p className="text-red-600 px-4">{error}</p>}
 

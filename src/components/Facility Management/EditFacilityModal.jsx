@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Box, IconButton } from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Box, IconButton, CircularProgress } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { addFacility, updateFacility } from "../../services/facilities";
 import { AdminContext } from "@/context/AdminContext";
@@ -14,17 +14,18 @@ export default function EditFacilityModal({ isOpen, onClose, onSave, facility })
   });
   const [image, setImage] = useState(null);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
   const { getToken } = useContext(AdminContext);
 
   useEffect(() => {
-    if (facility) {
+    if (isOpen && facility) {
       setFormData({
         title: facility.title || "",
         subtitle: facility.subtitle || "",
         description: facility.description || ""
       });
     }
-  }, [facility]);
+  }, [isOpen, facility]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -50,6 +51,7 @@ export default function EditFacilityModal({ isOpen, onClose, onSave, facility })
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
+    setLoading(true);
     const token = getToken();
     const submitData = new FormData();
     submitData.append('title', formData.title);
@@ -68,6 +70,8 @@ export default function EditFacilityModal({ isOpen, onClose, onSave, facility })
     } catch (error) {
       console.error("Error updating facility:", error);
       alert("Error updating facility");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -153,9 +157,9 @@ export default function EditFacilityModal({ isOpen, onClose, onSave, facility })
       </DialogContent>
       
       <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained" color="primary">
-          Update Facility
+        <Button onClick={handleClose} disabled={loading}>Cancel</Button>
+        <Button onClick={handleSubmit} variant="contained" color="primary" disabled={loading}>
+          {loading ? <CircularProgress size={20} color="inherit" /> : "Update Facility"}
         </Button>
       </DialogActions>
     </Dialog>

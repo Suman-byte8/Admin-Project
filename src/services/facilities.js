@@ -4,15 +4,19 @@ import { cachedFetchFacilities, invalidateCache } from "../utils/apiCache";
 const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
 
 /**
- * Fetches all facilities with caching.
+ * Fetches all facilities with optional caching.
+ * @param {string} token - The authentication token.
+ * @param {boolean} forceFresh - If true, bypasses cache and fetches fresh data.
  * @returns {Promise<any>} The response data containing facilities.
  */
-export const getFacilities = async (token) => {
+export const getFacilities = async (token, forceFresh = false) => {
   try {
-    // Try cached version first
-    const cachedData = await cachedFetchFacilities();
-    if (cachedData) {
-      return cachedData;
+    // Try cached version first unless forceFresh is true
+    if (!forceFresh) {
+      const cachedData = await cachedFetchFacilities();
+      if (cachedData) {
+        return cachedData;
+      }
     }
 
     // Fallback to API call with auth
@@ -42,9 +46,8 @@ export const addFacility = async (formData, token) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    // Invalidate facilities cache after mutation and refetch to update with recent data
+    // Invalidate facilities cache after mutation
     invalidateCache('facilities');
-    await cachedFetchFacilities(); // Refetch to update cache
     return res.data.facility;
   } catch (error) {
     console.error("Error adding facility:", error);
@@ -67,9 +70,8 @@ export const updateFacility = async (id, formData, token) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    // Invalidate facilities cache after mutation and refetch to update with recent data
+    // Invalidate facilities cache after mutation
     invalidateCache('facilities');
-    await cachedFetchFacilities(); // Refetch to update cache
     return res.data.facility;
   } catch (error) {
     console.error("Error updating facility:", error);
@@ -90,9 +92,8 @@ export const deleteFacility = async (id, token) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    // Invalidate facilities cache after mutation and refetch to update with recent data
+    // Invalidate facilities cache after mutation
     invalidateCache('facilities');
-    await cachedFetchFacilities(); // Refetch to update cache
     return res.data;
   } catch (error) {
     console.error("Error deleting facility:", error);

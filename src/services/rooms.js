@@ -4,16 +4,17 @@ import { cachedFetchRooms, invalidateCache } from "../utils/apiCache";
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 /**
- * Fetches all rooms with caching and pagination.
+ * Fetches all rooms with optional caching and pagination.
  * @param {string} token - The authentication token.
  * @param {number} page - The page number.
  * @param {number} limit - The number of rooms per page.
+ * @param {boolean} forceFresh - If true, bypasses cache and fetches fresh data.
  * @returns {Promise<any>} The response data containing rooms and pagination info.
  */
-export const getRooms = async (token, page = 1, limit = 20) => {
+export const getRooms = async (token, page = 1, limit = 20, forceFresh = false) => {
   try {
-    // Try cached version first (only for first page to avoid complexity)
-    if (page === 1) {
+    // Try cached version first (only for first page to avoid complexity) unless forceFresh is true
+    if (page === 1 && !forceFresh) {
       const cachedData = await cachedFetchRooms();
       if (cachedData) {
         return { rooms: cachedData.slice(0, limit), totalPages: Math.ceil(cachedData.length / limit), currentPage: 1 };

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaSync } from "react-icons/fa";
 
 const MenuManagement = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -39,9 +39,28 @@ const MenuManagement = () => {
     ? menuItems 
     : menuItems.filter(item => item.category === filter);
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    // Simulate refresh - you can add actual refresh logic here if needed
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  };
+
   return (
     <div className="w-full p-6 rounded-lg">
-      <h2 className="text-2xl font-semibold text-[#2b4c5b]">Menu Management</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-semibold text-[#2b4c5b]">Menu Management</h2>
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="bg-blue-600 text-white px-4 py-2.5 rounded-lg shadow hover:bg-blue-700 disabled:bg-blue-400 flex items-center gap-2 font-medium"
+        >
+          <FaSync className={`text-sm ${refreshing ? 'animate-spin' : ''}`} /> Refresh
+        </button>
+      </div>
       <form onSubmit={handleAddItem} className="mt-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <input

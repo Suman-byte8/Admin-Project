@@ -10,13 +10,14 @@
 - General: No pagination for large datasets, no image compression, no lazy loading, no React.memo.
 
 ## Plan
-1. **Add Caching to APIs**: Implement caching for reservationApi, facilities.js, and ensure cache invalidation on mutations.
-2. **Implement Debouncing**: Add debouncing to ReservationFilters search input.
-3. **Add Pagination**: Implement pagination for reservations list.
-4. **Image Compression**: Add image compression utility and use in AddImageModal, AddRoomModal, AddFacilityModal.
-5. **Optimize Components**: Use React.memo for table components and modals.
-6. **Lazy Loading**: Implement lazy loading for gallery images.
-7. **API Optimization**: Batch API calls where possible, reduce unnecessary requests.
+1. **Add Refresh Buttons**: Add refresh buttons to all management pages for manual data reloading. ✅ Done for FacilityManagement, RoomManagement, OfferManagement, PageManagement, AboutManagement, MenuManagement. GalleryManagement already had it. ✅ Fixed refresh to fetch fresh data from backend instead of cache.
+2. **Add Caching to APIs**: Implement caching for reservationApi, facilities.js, and ensure cache invalidation on mutations.
+3. **Implement Debouncing**: Add debouncing to ReservationFilters search input.
+4. **Add Pagination**: Implement pagination for reservations list.
+5. **Image Compression**: Add image compression utility and use in AddImageModal, AddRoomModal, AddFacilityModal.
+6. **Optimize Components**: Use React.memo for table components and modals.
+7. **Lazy Loading**: Implement lazy loading for gallery images.
+8. **API Optimization**: Batch API calls where possible, reduce unnecessary requests.
 
 ## Dependent Files to Edit
 - Admin Panel/src/services/reservationApi.js

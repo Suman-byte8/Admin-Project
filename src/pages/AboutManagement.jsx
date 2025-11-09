@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { toast } from "react-toastify";
+import { FaSync } from "react-icons/fa";
 import AboutUsSection from "../components/AboutManagement/AboutUsSection";
 import ContentBlock from "../components/AboutManagement/ContentBlocks";
 import AmenityCard from "../components/AboutManagement/AmenityCard";
@@ -131,12 +132,13 @@ const AboutManagement = () => {
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
           🔧 About Page Management
         </h1>
-        {/* <button
-          // onClick={handlePublish}
-          className="bg-blue-600 text-white px-5 py-2.5 rounded-lg shadow hover:bg-blue-700 transition font-medium"
+        <button
+          onClick={fetchAboutData}
+          disabled={loading}
+          className="bg-blue-600 text-white px-4 py-2.5 rounded-lg shadow hover:bg-blue-700 disabled:bg-blue-400 flex items-center gap-2 font-medium"
         >
-          Publish Changes
-        </button> */}
+          <FaSync className={`text-sm ${loading ? 'animate-spin' : ''}`} /> Refresh
+        </button>
       </header>
   
       {message && (

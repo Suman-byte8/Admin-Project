@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { FaRegEye } from "react-icons/fa";
+import { FaRegEye, FaSync } from "react-icons/fa";
 import imageCompression from "browser-image-compression";
 import { addHeroBanner } from "../../services/pageManagementApi";
 import { Link } from "react-router-dom";
@@ -150,9 +150,17 @@ const HomePageBanner = () => {
           <h2 className="text-xl font-medium text-gray-700 mb-4">
             Home Page Banner Section
           </h2>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-blue-600 text-white px-3 py-1.5 rounded-lg shadow hover:bg-blue-700 flex items-center gap-2 text-sm font-medium"
+            >
+              <FaSync className="text-xs" /> Refresh
+            </button>
             <Link to="/page-management/home-banner-preview" className="flex items-center gap-2 text-blue-500 cursor-pointer">
               <FaRegEye /> Preview
             </Link>
+          </div>
         </div>
 
         <form onSubmit={handleSaveChanges} className="space-y-6">
@@ -203,7 +211,7 @@ const HomePageBanner = () => {
                 value={description}
                 onChange={handleDescriptionChange}
                 rows="3"
-                className={`w-full border rounded-lg px-4 py-2 focus:ring-1 focus:ring-gray-300 outline-none resize-none ${
+                className={`w-full border rounded-lg px-4 py-2 focus:ring-1 focus:ring-gray-300 resize-none ${
                   descriptionError ? 'border-red-500' : ''
                 }`}
               />

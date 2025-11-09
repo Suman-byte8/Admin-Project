@@ -1,33 +1,58 @@
 import React, { useEffect, useState, useContext } from "react";
 import { toast } from "react-toastify";
+import { FaSync } from "react-icons/fa";
 import OfferCard from "../components/OfferManagement/OfferCard";
 import EditOffer from "../components/OfferManagement/EditOffer";
 import { getOffers, updateOffer, deleteOffer } from "../services/offers";
 import { Link } from "react-router-dom";
 import { AdminContext } from "@/context/AdminContext";
+import { getCachedData, setCachedData } from "../utils/cache";
+
+const CACHE_KEY = 'offers';
 
 const OfferManagement = () => {
   const [offers, setOffers] = useState([]);
   const [editingOffer, setEditingOffer] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const { getToken, checkTokenAndRedirect } = useContext(AdminContext);
   const token = getToken();
-  
+
+  const fetchOffers = async (forceFresh = false) => {
+    try {
+      setLoading(true);
+      if (!forceFresh) {
+        const cached = await getCachedData(CACHE_KEY);
+        if (cached) {
+          setOffers(cached);
+          setLoading(false);
+          return;
+        }
+      }
+      const data = await getOffers(token, true);
+      setOffers(data);
+      await setCachedData(CACHE_KEY, data);
+      console.log("Fetched offers:", data);
+    } catch (err) {
+      console.error("Failed to fetch offers:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch offers on mount
   useEffect(() => {
     checkTokenAndRedirect();
-    (async () => {
-      const data = await getOffers(token);
-      setOffers(data);
-      console.log("Fetched offers:", data);
-    })();
+    fetchOffers();
   }, [token, checkTokenAndRedirect]);
 
   // Save updates
   const handleUpdate = async (id, formData,token) => {
     try {
       const updated = await updateOffer(id, formData,token);
-      setOffers((prev) => prev.map((o) => (o._id === id ? updated : o)));
+      const updatedOffers = offers.map((o) => (o._id === id ? updated : o));
+      setOffers(updatedOffers);
+      await setCachedData(CACHE_KEY, updatedOffers);
       setEditingOffer(null);
       toast.success("Offer updated successfully!");
     } catch (err) {
@@ -39,7 +64,9 @@ const OfferManagement = () => {
   const handleDelete = async (id,token) => {
     try {
       await deleteOffer(id,token);
-      setOffers((prev) => prev.filter((o) => o._id !== id));
+      const updatedOffers = offers.filter((o) => o._id !== id);
+      setOffers(updatedOffers);
+      await setCachedData(CACHE_KEY, updatedOffers);
       toast.success("Offer deleted successfully!");
     } catch (err) {
       toast.error("Failed to delete offer");
@@ -67,12 +94,21 @@ const OfferManagement = () => {
           <h1 className="text-3xl font-bold text-gray-800">Offers</h1>
           <p className="text-gray-600 mt-2">Current Offers</p>
         </div>
-        <Link
-          to="/offer-management/add-offer"
-          className="bg-[#2c5e6e] text-white px-5 py-2 rounded-full hover:bg-[#244c58] transition"
-        >
-          + Add Offer
-        </Link>
+        <div className="flex gap-4">
+          <button
+            onClick={() => fetchOffers(true)}
+            disabled={loading}
+            className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 disabled:bg-blue-400 flex items-center gap-2 transition"
+          >
+            <FaSync className={`text-sm ${loading ? 'animate-spin' : ''}`} /> Refresh
+          </button>
+          <Link
+            to="/offer-management/add-offer"
+            className="bg-[#2c5e6e] text-white px-5 py-2 rounded-full hover:bg-[#244c58] transition"
+          >
+            + Add Offer
+          </Link>
+        </div>
       </div>
 
   {editingOffer && (

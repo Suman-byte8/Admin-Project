@@ -1,10 +1,10 @@
 // src/pages/PageManagement/DistinctiveSection.jsx
 import React, { useState, useContext } from "react";
 import { FiTrash2 } from "react-icons/fi";
+import { FaRegEye, FaSync } from "react-icons/fa";
 import imageCompression from "browser-image-compression";
 import { addDistinctive } from "@/services/distinctive";
 import { Link } from "react-router-dom";
-import { FaRegEye } from "react-icons/fa";
 import { AdminContext } from "@/context/AdminContext";
 import { toast } from "react-toastify";
 import { validateWordCount } from "../../utils/validation";
@@ -99,12 +99,20 @@ const DistinctiveSection = () => {
       <div className="bg-white rounded-2xl shadow p-6 mb-10">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-medium text-gray-700">Distinctive & Description</h2>
-          <Link
-            to="/page-management/distinctive-preview"
-            className="flex items-center gap-2 text-blue-500 cursor-pointer"
-          >
-            <FaRegEye /> Preview
-          </Link>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-blue-600 text-white px-3 py-1.5 rounded-lg shadow hover:bg-blue-700 flex items-center gap-2 text-sm font-medium"
+            >
+              <FaSync className="text-xs" /> Refresh
+            </button>
+            <Link
+              to="/page-management/distinctive-preview"
+              className="flex items-center gap-2 text-blue-500 cursor-pointer"
+            >
+              <FaRegEye /> Preview
+            </Link>
+          </div>
         </div>
 
         <input

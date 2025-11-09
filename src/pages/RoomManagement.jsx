@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useContext } from "react";
-import { FaPlus, FaEdit, FaTrash, FaSpinner, FaUsers, FaTag, FaRupeeSign, FaCircle } from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaSpinner, FaUsers, FaTag, FaRupeeSign, FaCircle, FaSync } from "react-icons/fa";
 import { toast } from "react-toastify";
 import AddRoomModal from "../components/RoomManagement/AddRoomModal";
 import EditRoomModal from "../components/RoomManagement/EditRoomModal";
 import { getRooms, addRoom, updateRoom, deleteRoom, updateRoomStatus } from "../services/rooms";
 import { AdminContext } from "@/context/AdminContext";
+import { getCachedData, setCachedData } from "../utils/cache";
+
+const CACHE_KEY = 'rooms';
 
 const STATUS_COLORS = {
   available: 'text-green-500',
@@ -29,24 +32,37 @@ export default function RoomManagement() {
   const { getToken, checkTokenAndRedirect } = useContext(AdminContext);
   const token = getToken();
 
+  const fetchRooms = async (forceFresh = false) => {
+    try {
+      setLoading(true);
+      if (!forceFresh) {
+        const cached = await getCachedData(CACHE_KEY);
+        if (cached) {
+          setRooms(cached);
+          setError(null);
+          setLoading(false);
+          return;
+        }
+      }
+      const data = await getRooms(token, 1, 20, true);
+      setRooms(data.rooms);
+      await setCachedData(CACHE_KEY, data.rooms);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError(
+        err?.response?.status === 401
+          ? "Unauthorized. Please log in again."
+          : "Failed to fetch rooms"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch Rooms
   useEffect(() => {
     checkTokenAndRedirect();
-    const fetchRooms = async () => {
-      try {
-        const data = await getRooms(token, 1, 20);
-        setRooms(data.rooms);
-      } catch (err) {
-        console.error(err);
-        setError(
-          err?.response?.status === 401
-            ? "Unauthorized. Please log in again."
-            : "Failed to fetch rooms"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchRooms();
   }, [token, checkTokenAndRedirect]);
 
@@ -54,7 +70,9 @@ export default function RoomManagement() {
   const handleAddRoom = async (formData) => {
     try {
       const newRoom = await addRoom(formData, token);
-      setRooms((prev) => [...prev, newRoom]);
+      const updatedRooms = [...rooms, newRoom];
+      setRooms(updatedRooms);
+      await setCachedData(CACHE_KEY, updatedRooms);
       setIsAddOpen(false);
       toast.success("Room added successfully");
     } catch (err) {
@@ -66,9 +84,9 @@ export default function RoomManagement() {
   const handleUpdateRoom = async (id, formData) => {
     try {
       const updated = await updateRoom(id, formData, token);
-      setRooms((prev) =>
-        prev.map((room) => (room._id === id ? updated : room))
-      );
+      const updatedRooms = rooms.map((room) => (room._id === id ? updated : room));
+      setRooms(updatedRooms);
+      await setCachedData(CACHE_KEY, updatedRooms);
       setIsEditOpen(false);
       setSelectedRoom(null);
       toast.success("Room updated successfully");
@@ -82,7 +100,9 @@ export default function RoomManagement() {
     if (!confirm("Delete this room?")) return;
     try {
       await deleteRoom(id, token);
-      setRooms((prev) => prev.filter((room) => room._id !== id));
+      const updatedRooms = rooms.filter((room) => room._id !== id);
+      setRooms(updatedRooms);
+      await setCachedData(CACHE_KEY, updatedRooms);
       toast.success("Room deleted successfully");
     } catch (err) {
       console.error(err);
@@ -93,9 +113,9 @@ export default function RoomManagement() {
   const handleStatusChange = async (roomId, newStatus) => {
     try {
       const updated = await updateRoomStatus(roomId, newStatus, token);
-      setRooms(prev =>
-        prev.map(room => (room._id === roomId ? updated : room))
-      );
+      const updatedRooms = rooms.map(room => (room._id === roomId ? updated : room));
+      setRooms(updatedRooms);
+      await setCachedData(CACHE_KEY, updatedRooms);
       toast.success(`Room status updated to ${STATUS_LABELS[newStatus]}`);
     } catch (err) {
       console.error(err);
@@ -124,12 +144,21 @@ export default function RoomManagement() {
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">
           🏨 Room Management
         </h1>
-        <button
-          onClick={() => setIsAddOpen(true)}
-          className="bg-[#2c5e6e] text-white px-5 py-2.5 rounded-lg shadow hover:bg-[#244c58] flex items-center gap-2 font-medium"
-        >
-          <FaPlus /> Add Room
-        </button>
+        <div className="flex gap-4">
+          <button
+            onClick={() => fetchRooms(true)}
+            disabled={loading}
+            className="bg-blue-600 text-white px-4 py-2.5 rounded-lg shadow hover:bg-blue-700 disabled:bg-blue-400 flex items-center gap-2 font-medium"
+          >
+            <FaSync className={`text-sm ${loading ? 'animate-spin' : ''}`} /> Refresh
+          </button>
+          <button
+            onClick={() => setIsAddOpen(true)}
+            className="bg-[#2c5e6e] text-white px-5 py-2.5 rounded-lg shadow hover:bg-[#244c58] flex items-center gap-2 font-medium"
+          >
+            <FaPlus /> Add Room
+          </button>
+        </div>
       </div>
 
       {/* Rooms Grid */}
