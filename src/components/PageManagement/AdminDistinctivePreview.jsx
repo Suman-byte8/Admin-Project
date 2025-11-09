@@ -215,18 +215,18 @@ const AdminDistinctivePreview = () => {
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-semibold">Manage Features</h3>
-            <button
+            {/* <button
               onClick={startAdd}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <FaPlus /> Add New Feature
-            </button>
+            </button> */}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {listGrid}
 
-            <div className="bg-white rounded-lg shadow-md p-4 flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors">
+            {/* <div className="bg-white rounded-lg shadow-md p-4 flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors">
               <button
                 onClick={startAdd}
                 className="text-blue-600 flex flex-col items-center gap-2 hover:text-blue-800 transition-colors"
@@ -234,7 +234,7 @@ const AdminDistinctivePreview = () => {
                 <FaPlus className="text-2xl" />
                 <span>Add New Feature</span>
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       );
