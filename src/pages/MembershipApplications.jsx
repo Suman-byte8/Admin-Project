@@ -10,6 +10,7 @@ const MembershipApplications = () => {
     approved: [],
     pending: [],
     rejected: [],
+    expired: [],
   });
   const [membershipTypeFilter, setMembershipTypeFilter] = useState("");
   const [loading, setLoading] = useState(true);
@@ -18,19 +19,19 @@ const MembershipApplications = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchMemberships(1);
-  }, []);
+    fetchMemberships(1, activeTab);
+  }, [activeTab]);
 
-  const fetchMemberships = async (page) => {
+  const fetchMemberships = async (page, status) => {
     try {
       setLoading(true);
-      const { users, pagination } = await getMemberships(page, 50);
+      const { users, pagination } = await getMemberships(page, 50, status);
 
-      // Group by status
       const grouped = {
         approved: [],
         pending: [],
         rejected: [],
+        expired: [],
       };
 
       users.forEach((user) => {
@@ -41,14 +42,17 @@ const MembershipApplications = () => {
           phone: `${user.phoneNumber}`,
           status: user.status,
           membershipType: user.memberShipType,
+          memberShipStartDate: user.memberShipStartDate,
+          memberShipEndDate: user.memberShipEndDate,
         };
-        if (grouped[user.status]) {
+        if (status === 'expired') {
+          grouped.expired.push(app);
+        } else if (grouped[user.status]) {
           grouped[user.status].push(app);
         }
       });
 
-      setApplications(grouped);
-      // Optionally handle pagination info if needed
+      setApplications(prev => ({ ...prev, ...grouped }));
     } catch (err) {
       setError("Failed to fetch memberships");
       console.error("Error fetching memberships:", err);
@@ -65,6 +69,7 @@ const MembershipApplications = () => {
     { id: "approved", label: "Approved", count: applications.approved.length },
     { id: "pending", label: "Pending", count: applications.pending.length },
     { id: "rejected", label: "Rejected", count: applications.rejected.length },
+    { id: "expired", label: "Expired", count: applications.expired.length },
   ];
 
   const currentData = (applications[activeTab] || []).filter((app) => {
@@ -139,6 +144,8 @@ const MembershipApplications = () => {
                   <th className="px-6 py-3">Email</th>
                   <th className="px-6 py-3">Phone</th>
                   <th className="px-6 py-3">Status</th>
+                  <th className="px-6 py-3">Start Date</th>
+                  <th className="px-6 py-3">End Date</th>
                   <th className="px-6 py-3 text-right">Actions</th>
                 </tr>
               </thead>

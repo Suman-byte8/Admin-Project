@@ -7,6 +7,16 @@ const ApplicationsTable = React.memo(({ data, onDetailsClick }) => {
     return <EmptyState />;
   }
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
   return (
     <>
       {data.map((app) => (
@@ -22,6 +32,8 @@ const ApplicationsTable = React.memo(({ data, onDetailsClick }) => {
           <td className="px-6 py-4">
             <StatusBadge status={app.status} />
           </td>
+          <td className="px-6 py-4">{formatDate(app.memberShipStartDate)}</td>
+          <td className="px-6 py-4">{formatDate(app.memberShipEndDate)}</td>
           <td className="px-6 py-4 text-right">
             <button
               onClick={() => onDetailsClick(app)}
