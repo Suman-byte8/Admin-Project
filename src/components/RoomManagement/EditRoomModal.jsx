@@ -112,6 +112,7 @@ const EditRoomModal = ({ isOpen, onClose, onSave, room }) => {
                 <option>Deluxe Room</option>
                 <option>Executive Deluxe Room</option>
                 <option>Suite</option>
+                <option>Family Suite</option>
               </select>
             </div>
             <div>
