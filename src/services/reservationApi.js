@@ -38,8 +38,10 @@ export const updateReservationStatus = async (token, type, id, status) => {
     { status },
     { headers: { Authorization: `Bearer ${token}` } }
   );
-  // Invalidate reservations cache after mutation
+  // Invalidate reservations cache after mutation and refetch to update with recent data
   invalidateCache('reservations');
+  // Note: Reservations use cachedApiCall with specific keys, so refetching might not be straightforward
+  // For now, just invalidate. Future improvement could involve refetching specific cache keys.
   return res.data;
 };
 
@@ -49,7 +51,9 @@ export const deleteReservation = async (token, type, id) => {
   const res = await axios.delete(`${API_URL}/reservations/${slug}/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  // Invalidate reservations cache after mutation
+  // Invalidate reservations cache after mutation and refetch to update with recent data
   invalidateCache('reservations');
+  // Note: Reservations use cachedApiCall with specific keys, so refetching might not be straightforward
+  // For now, just invalidate. Future improvement could involve refetching specific cache keys.
   return res.data;
 };

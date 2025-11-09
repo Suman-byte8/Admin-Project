@@ -37,8 +37,9 @@ export const aboutApi = {
           'Content-Type': 'multipart/form-data',
         },
       });
-      // Invalidate about page cache after mutation
+      // Invalidate about page cache after mutation and refetch to update with recent data
       invalidateCache('aboutPage');
+      await cachedFetchAboutPage(); // Refetch to update cache
       return response.data;
     } catch (error) {
       console.error("Error updating About Us section:", error);
@@ -55,8 +56,9 @@ export const aboutApi = {
           // "Content-Type": "application/json",
         },
       });
-      // Invalidate about page cache after mutation
+      // Invalidate about page cache after mutation and refetch to update with recent data
       invalidateCache('aboutPage');
+      await cachedFetchAboutPage(); // Refetch to update cache
       return response.data;
     } catch (error) {
       console.error("Error adding content block:", error);
@@ -73,8 +75,9 @@ export const aboutApi = {
           // "Content-Type": "application/json",
         },
       });
-      // Invalidate about page cache after mutation
+      // Invalidate about page cache after mutation and refetch to update with recent data
       invalidateCache('aboutPage');
+      await cachedFetchAboutPage(); // Refetch to update cache
       return response.data;
     } catch (error) {
       console.error("Error updating content block:", error);
@@ -90,8 +93,9 @@ export const aboutApi = {
           Authorization: `Bearer ${token}`,
         },
       });
-      // Invalidate about page cache after mutation
+      // Invalidate about page cache after mutation and refetch to update with recent data
       invalidateCache('aboutPage');
+      await cachedFetchAboutPage(); // Refetch to update cache
       return response.data;
     } catch (error) {
       console.error("Error deleting content block:", error);
@@ -108,8 +112,9 @@ export const aboutApi = {
           // "Content-Type": "application/json",
         },
       });
-      // Invalidate about page cache after mutation
+      // Invalidate about page cache after mutation and refetch to update with recent data
       invalidateCache('aboutPage');
+      await cachedFetchAboutPage(); // Refetch to update cache
       return response.data;
     } catch (error) {
       console.error("Error adding amenity:", error);
@@ -126,8 +131,9 @@ export const aboutApi = {
           // "Content-Type": "application/json",
         },
       });
-      // Invalidate about page cache after mutation
+      // Invalidate about page cache after mutation and refetch to update with recent data
       invalidateCache('aboutPage');
+      await cachedFetchAboutPage(); // Refetch to update cache
       return response.data;
     } catch (error) {
       console.error("Error updating amenity:", error);
@@ -143,8 +149,9 @@ export const aboutApi = {
           Authorization: `Bearer ${token}`,
         },
       });
-      // Invalidate about page cache after mutation
+      // Invalidate about page cache after mutation and refetch to update with recent data
       invalidateCache('aboutPage');
+      await cachedFetchAboutPage(); // Refetch to update cache
       return response.data;
     } catch (error) {
       console.error("Error deleting amenity:", error);
@@ -161,8 +168,9 @@ export const aboutApi = {
           // "Content-Type": "application/json",
         },
       });
-      // Invalidate about page cache after mutation
+      // Invalidate about page cache after mutation and refetch to update with recent data
       invalidateCache('aboutPage');
+      await cachedFetchAboutPage(); // Refetch to update cache
       return response.data;
     } catch (error) {
       console.error("Error adding service:", error);
@@ -179,8 +187,9 @@ export const aboutApi = {
           // "Content-Type": "application/json",
         },
       });
-      // Invalidate about page cache after mutation
+      // Invalidate about page cache after mutation and refetch to update with recent data
       invalidateCache('aboutPage');
+      await cachedFetchAboutPage(); // Refetch to update cache
       return response.data;
     } catch (error) {
       console.error("Error updating service:", error);
@@ -196,8 +205,9 @@ export const aboutApi = {
           Authorization: `Bearer ${token}`,
         },
       });
-      // Invalidate about page cache after mutation
+      // Invalidate about page cache after mutation and refetch to update with recent data
       invalidateCache('aboutPage');
+      await cachedFetchAboutPage(); // Refetch to update cache
       return response.data;
     } catch (error) {
       console.error("Error deleting service:", error);

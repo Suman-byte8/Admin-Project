@@ -40,8 +40,9 @@ export const addGalleryImages = async (formData, token) => {
         "Content-Type": "multipart/form-data",
       },
     });
-    // Invalidate gallery cache after mutation
+    // Invalidate gallery cache after mutation and refetch to update with recent data
     invalidateCache('gallery');
+    await cachedFetchGallery(); // Refetch to update cache
     return response.data;
   } catch (error) {
     console.error('Error adding gallery images:', error);
@@ -58,8 +59,9 @@ export const updateGalleryImage = async (imageId, formData, token) => {
         "Content-Type": "multipart/form-data",
       },
     });
-    // Invalidate gallery cache after mutation
+    // Invalidate gallery cache after mutation and refetch to update with recent data
     invalidateCache('gallery');
+    await cachedFetchGallery(); // Refetch to update cache
     return response.data;
   } catch (error) {
     console.error('Error updating gallery image:', error);
@@ -75,8 +77,9 @@ export const deleteGalleryImage = async (imageId, token) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    // Invalidate gallery cache after mutation
+    // Invalidate gallery cache after mutation and refetch to update with recent data
     invalidateCache('gallery');
+    await cachedFetchGallery(); // Refetch to update cache
     return response.data;
   } catch (error) {
     console.error('Error deleting gallery image:', error);

@@ -47,8 +47,9 @@ export const addOffer = async (formData, token) => {
         },
       }
     );
-    // Invalidate offers cache after mutation
+    // Invalidate offers cache after mutation and refetch to update with recent data
     invalidateCache('curatedOffers');
+    await cachedFetchCuratedOffers(); // Refetch to update cache
     return res.data.offer;
   } catch (error) {
     console.error("Error adding offer:", error);
@@ -75,8 +76,9 @@ export const updateOffer = async (id, formData, token) => {
         },
       }
     );
-    // Invalidate offers cache after mutation
+    // Invalidate offers cache after mutation and refetch to update with recent data
     invalidateCache('curatedOffers');
+    await cachedFetchCuratedOffers(); // Refetch to update cache
     return res.data.offer;
   } catch (error) {
     console.error("Error updating offer:", error);
@@ -100,8 +102,9 @@ export const deleteOffer = async (id, token) => {
         },
       }
     );
-    // Invalidate offers cache after mutation
+    // Invalidate offers cache after mutation and refetch to update with recent data
     invalidateCache('curatedOffers');
+    await cachedFetchCuratedOffers(); // Refetch to update cache
     return res.data;
   } catch (error) {
     console.error("Error deleting offer:", error);

@@ -42,8 +42,9 @@ export const addFacility = async (formData, token) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    // Invalidate facilities cache after mutation
+    // Invalidate facilities cache after mutation and refetch to update with recent data
     invalidateCache('facilities');
+    await cachedFetchFacilities(); // Refetch to update cache
     return res.data.facility;
   } catch (error) {
     console.error("Error adding facility:", error);
@@ -66,8 +67,9 @@ export const updateFacility = async (id, formData, token) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    // Invalidate facilities cache after mutation
+    // Invalidate facilities cache after mutation and refetch to update with recent data
     invalidateCache('facilities');
+    await cachedFetchFacilities(); // Refetch to update cache
     return res.data.facility;
   } catch (error) {
     console.error("Error updating facility:", error);
@@ -88,8 +90,9 @@ export const deleteFacility = async (id, token) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    // Invalidate facilities cache after mutation
+    // Invalidate facilities cache after mutation and refetch to update with recent data
     invalidateCache('facilities');
+    await cachedFetchFacilities(); // Refetch to update cache
     return res.data;
   } catch (error) {
     console.error("Error deleting facility:", error);

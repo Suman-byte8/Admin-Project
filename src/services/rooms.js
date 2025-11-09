@@ -1,5 +1,5 @@
 import axios from "axios";
-import { cachedFetchRooms } from "../utils/apiCache";
+import { cachedFetchRooms, invalidateCache } from "../utils/apiCache";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -48,6 +48,9 @@ export const addRoom = async (formData, token) => {
         Authorization: `Bearer ${token}`,
       },
     });
+    // Invalidate rooms cache after mutation and refetch to update with recent data
+    invalidateCache('rooms');
+    await cachedFetchRooms(); // Refetch to update cache
     return res.data.room;
   } catch (error) {
     console.error("Error adding room:", error);
@@ -72,10 +75,13 @@ export const updateRoom = async (id, data, token) => {
     };
 
     const res = await axios.put(
-      `${API_URL}/rooms/admin/update-room-details/${id}`, 
+      `${API_URL}/rooms/admin/update-room-details/${id}`,
       isFormData ? data : JSON.stringify(data),
       { headers }
     );
+    // Invalidate rooms cache after mutation and refetch to update with recent data
+    invalidateCache('rooms');
+    await cachedFetchRooms(); // Refetch to update cache
     return res.data.room;
   } catch (error) {
     console.error("Error updating room:", error);
@@ -102,6 +108,9 @@ export const updateRoomStatus = async (id, status, token) => {
         }
       }
     );
+    // Invalidate rooms cache after mutation and refetch to update with recent data
+    invalidateCache('rooms');
+    await cachedFetchRooms(); // Refetch to update cache
     return res.data.room;
   } catch (error) {
     console.error("Error updating room status:", error);
@@ -122,6 +131,9 @@ export const deleteRoom = async (id, token) => {
         Authorization: `Bearer ${token}`,
       },
     });
+    // Invalidate rooms cache after mutation and refetch to update with recent data
+    invalidateCache('rooms');
+    await cachedFetchRooms(); // Refetch to update cache
     return res.data;
   } catch (error) {
     console.error("Error deleting room:", error);
