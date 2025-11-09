@@ -48,9 +48,9 @@ const App = () => {
       <AdminProvider>
         <Routes>
           {/* Public routes */}
-          <Route path="/sign-up" element={<Signup />} />
+          {/* <Route path="/sign-up" element={<Signup />} /> */}
           <Route path="/log-in" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
+          {/* <Route path="/forgot-password" element={<ForgotPassword />} /> */}
 
           {/* Protected routes */}
           <Route element={<MainLayout />}>

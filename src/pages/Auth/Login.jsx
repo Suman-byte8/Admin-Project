@@ -126,14 +126,14 @@ const Login = () => {
               {adminContext.loading ? "Signing In..." : "Login"}
             </button>
           </div>
-          <div className="mt-4 text-center">
+          {/* <div className="mt-4 text-center">
             <Link
               className="text-sm text-[var(--text-secondary)] dark:text-text-secondary hover:underline"
               to={"/forgot-password"}
             >
               Forgot Password?
             </Link>
-          </div>
+          </div> */}
 
         </form>
       </div>
