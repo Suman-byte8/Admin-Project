@@ -26,12 +26,15 @@ const AdminDistinctivePreview = () => {
   const [newFiles, setNewFiles] = useState([]);
   const [newPreviews, setNewPreviews] = useState([]);
 
-  // edit-only: manage existing URLs (no upload here to keep backend untouched)
+  // edit-only: manage existing URLs and new files
   const [existingUrls, setExistingUrls] = useState([]);
+  const [editNewFiles, setEditNewFiles] = useState([]);
+  const [editNewPreviews, setEditNewPreviews] = useState([]);
 
   const [selectedLink, setSelectedLink] = useState(null);
   const [activeTab, setActiveTab] = useState("features");
   const [showForm, setShowForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { getToken } = useContext(AdminContext);
   const navigate = useNavigate();
@@ -74,8 +77,8 @@ const AdminDistinctivePreview = () => {
     setTitle(item.title || "");
     setDescription(item.description || "");
     setExistingUrls(item.images || []);
-    setNewFiles([]); // not supported in edit pathway (no upload)
-    setNewPreviews([]);
+    setEditNewFiles([]);
+    setEditNewPreviews([]);
     setShowForm(true);
   };
 
@@ -87,19 +90,24 @@ const AdminDistinctivePreview = () => {
     setNewFiles([]);
     setNewPreviews([]);
     setExistingUrls([]);
+    setEditNewFiles([]);
+    setEditNewPreviews([]);
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     try {
       if (editingItem) {
-        // UPDATE (JSON ONLY)
-        await updateDistinctive(
-          editingItem._id,
-          { title, description, images: existingUrls },
-          token
-        );
+        // UPDATE (FormData: title, description, images as mixed URLs and files)
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("description", description);
+        existingUrls.forEach((url) => formData.append("images", url));
+        editNewFiles.forEach((file) => formData.append("images", file));
+
+        await updateDistinctive(editingItem._id, formData, token);
         toast.success("Feature updated successfully");
       } else {
         // CREATE (multipart)
@@ -117,6 +125,8 @@ const AdminDistinctivePreview = () => {
     } catch (err) {
       console.error("Save failed:", err);
       toast.error("Failed to save feature");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -164,10 +174,40 @@ const AdminDistinctivePreview = () => {
     setNewFiles((prev) => prev.filter((_, idx) => idx !== i));
   };
 
-  // =============== EDIT IMAGES (URLs ONLY) ===============
+  // =============== EDIT IMAGES (URLs AND NEW FILES) ===============
 
   const removeExistingUrl = (i) => {
     setExistingUrls((prev) => prev.filter((_, idx) => idx !== i));
+  };
+
+  const handleEditFiles = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    try {
+      const compressed = await Promise.all(
+        files.map((file) =>
+          imageCompression(file, { maxSizeMB: 2, maxWidthOrHeight: 1920 })
+        )
+      );
+
+      const asFiles = compressed.map(
+        (blob, i) => new File([blob], files[i].name, { type: blob.type })
+      );
+
+      setEditNewFiles((prev) => [...prev, ...asFiles]);
+      setEditNewPreviews((prev) => [
+        ...prev,
+        ...asFiles.map((f) => URL.createObjectURL(f)),
+      ]);
+    } catch (err) {
+      console.error("Compression failed:", err);
+    }
+  };
+
+  const removeEditNewPreview = (i) => {
+    setEditNewPreviews((prev) => prev.filter((_, idx) => idx !== i));
+    setEditNewFiles((prev) => prev.filter((_, idx) => idx !== i));
   };
 
   // =============== UI ===============
@@ -431,10 +471,40 @@ const AdminDistinctivePreview = () => {
                     </div>
                   ))}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  To keep backend unchanged, editing supports removing images but not uploading new ones.
-                  Create a new feature if you need to upload fresh images.
-                </p>
+              </div>
+            )}
+
+            {/* EDIT: new file upload */}
+            {editingItem && (
+              <div>
+                <label className="block text-sm font-medium mb-2">Add New Images</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleEditFiles}
+                  className="border rounded p-2 w-full"
+                />
+                {editNewPreviews.length > 0 && (
+                  <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {editNewPreviews.map((src, i) => (
+                      <div key={i} className="relative">
+                        <img
+                          src={src}
+                          alt={`New Preview ${i}`}
+                          className="w-full h-24 object-cover rounded-lg shadow"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeEditNewPreview(i)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -446,8 +516,8 @@ const AdminDistinctivePreview = () => {
               >
                 Cancel
               </button>
-              <button type="submit" className="px-4 py-2 rounded bg-blue-600 text-white">
-                {editingItem ? "Update" : "Add"} Feature
+              <button type="submit" disabled={isSubmitting} className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed">
+                {isSubmitting ? "Submitting..." : (editingItem ? "Update" : "Add") + " Feature"}
               </button>
             </div>
           </form>

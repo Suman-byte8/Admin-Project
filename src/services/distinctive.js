@@ -42,12 +42,17 @@ export const addDistinctive = async (formData, token) => {
   return data;
 };
 
-// UPDATE (JSON ONLY: title, description, images as URL array)
-export const updateDistinctive = async (id, body, token) => {
+// UPDATE (FormData: title, description, existingImages as URL array, images as new files)
+export const updateDistinctive = async (id, formData, token) => {
   const { data } = await axios.put(
     `${API_URL}/content/home/distinctive/${id}`,
-    body,
-    { headers: { ...authHeader(token) } }
+    formData,
+    {
+      headers: {
+        ...authHeader(token),
+        "Content-Type": "multipart/form-data",
+      },
+    }
   );
   return data;
 };
